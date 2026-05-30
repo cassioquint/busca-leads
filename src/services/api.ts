@@ -1,10 +1,7 @@
 import { auth } from './firebase';
 
-// 🔥 A Vercel vai ler isso das variáveis de ambiente configuradas no painel dela.
-// Em local, ele usará o localhost se a variável não estiver definida.
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
-// Função auxiliar para pegar o token do usuário logado
 const getAuthHeaders = async (): Promise<Record<string, string>> => {
   const user = auth.currentUser;
   if (!user) return { 'Content-Type': 'application/json' };
@@ -75,17 +72,71 @@ export const api = {
     return response.json();
   },
 
-  // Atualiza a coluna do Kanban
-  async updateLeadBucket(leadId: string, bucket: string, user: string) {
+  // 🔥 ATUALIZADO: Alinhado com o novo método PUT do backend (muda de bucket para bucketId)
+  async updateLeadBucket(leadId: string, bucketId: string, user: string) {
     const headers = await getAuthHeaders();
     
     const response = await fetch(`${BASE_URL}/funil/move`, {
       method: 'PUT',
       headers,
-      body: JSON.stringify({ leadId, bucket, user })
+      body: JSON.stringify({ leadId, bucketId, user })
     });
     
     if (!response.ok) throw new Error('Falha ao atualizar a coluna do lead no servidor');
+    return response.json();
+  },
+
+  // Listar todas as colunas do usuário logado
+  async getBuckets(user: string) {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${BASE_URL}/buckets?user=${encodeURIComponent(user)}`, {
+      headers
+    });
+
+    if (!response.ok) throw new Error('Erro ao carregar colunas do Kanban');
+    return response.json();
+  },
+
+  // Criar uma nova coluna customizada
+  async createBucket(name: string, user: string, order?: number) {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${BASE_URL}/buckets`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ name, user, order })
+    });
+
+    if (!response.ok) throw new Error('Falha ao criar nova coluna');
+    return response.json();
+  },
+
+  // Editar o nome ou a ordem de uma coluna existente
+  async updateBucket(id: string, name: string, order?: number) {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${BASE_URL}/buckets`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ id, name, order })
+    });
+
+    if (!response.ok) throw new Error('Falha ao atualizar coluna');
+    return response.json();
+  },
+
+  // Deletar uma coluna (o backend vai barrar se houver leads nela)
+  async deleteBucket(id: string, user: string) {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${BASE_URL}/buckets`, {
+      method: 'DELETE',
+      headers,
+      body: JSON.stringify({ id, user })
+    });
+
+    if (!response.ok) {
+      // Captura a mensagem da nossa trava de segurança do backend
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Falha ao deletar coluna');
+    }
     return response.json();
   }
 };
