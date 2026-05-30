@@ -41,7 +41,7 @@ export const RadarView: React.FC<RadarViewProps> = ({
     
     try {
       // 🔥 Passamos o e-mail do usuário como terceiro parâmetro para o backend cruzar os dados!
-      const data = await api.searchLeads(query, cleanCity, user?.email);
+      const data = await api.searchLeads(query, cleanCity, user?.email || undefined);
       setLeads(data.results);
       
     } catch (err) {

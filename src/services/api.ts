@@ -1,11 +1,13 @@
 import { auth } from './firebase';
 
-const BASE_URL = 'http://localhost:3001/api';
+// 🔥 A Vercel vai ler isso das variáveis de ambiente configuradas no painel dela.
+// Em local, ele usará o localhost se a variável não estiver definida.
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 // Função auxiliar para pegar o token do usuário logado
-const getAuthHeaders = async () => {
+const getAuthHeaders = async (): Promise<Record<string, string>> => {
   const user = auth.currentUser;
-  if (!user) return {};
+  if (!user) return { 'Content-Type': 'application/json' };
   
   const token = await user.getIdToken();
   return {
@@ -16,11 +18,9 @@ const getAuthHeaders = async () => {
 
 export const api = {
   // Busca leads no Radar (Banco Neon ou SerpApi)
-  // 🔥 NOVO: Adicionado parâmetro de usuário para o backend cruzar com o funil
   async searchLeads(query: string, city: string, user?: string) {
     let url = `${BASE_URL}/leads?query=${encodeURIComponent(query)}&city=${encodeURIComponent(city)}`;
     
-    // Se tiver usuário logado, manda pra API saber de quem é o funil
     if (user) {
       url += `&user=${encodeURIComponent(user)}`;
     }
@@ -72,10 +72,10 @@ export const api = {
     });
     
     if (!response.ok) throw new Error('Falha ao salvar o lead manual no banco');
-    return response.json(); // Retorna o lead formatadinho com o ID real do banco
+    return response.json();
   },
 
-  // 🔥 NOVO: Atualiza a coluna do Kanban
+  // Atualiza a coluna do Kanban
   async updateLeadBucket(leadId: string, bucket: string, user: string) {
     const headers = await getAuthHeaders();
     
