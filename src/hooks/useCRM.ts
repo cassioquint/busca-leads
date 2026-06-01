@@ -9,12 +9,18 @@ interface Bucket {
   name: string;
 }
 
+interface Tag {
+  id: string;
+  name: string;
+  color: string;
+}
+
 export const useCRM = () => {
   const [radarLeads, setRadarLeads] = useState<Lead[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [funilLeads, setFunilLeads] = useState<Lead[]>([]);
-  // 🔥 NOVO: Estado para armazenar as colunas vindas da API/Banco
   const [buckets, setBuckets] = useState<Bucket[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
 
   const { user } = useAuth();
 
@@ -27,6 +33,9 @@ export const useCRM = () => {
         // Carrega primeiro as colunas do Kanban (Garante que o backend já rode o seed se for novo usuário)
         const bucketsData = await api.getBuckets(user.email);
         setBuckets(bucketsData);
+
+        const tagsData = await api.getTags(user.email);
+        setTags(tagsData);
 
         // Depois carrega os leads vinculados a essas colunas
         const leadsData = await api.getFunilLeads(user.email);
@@ -169,6 +178,46 @@ export const useCRM = () => {
     }
   };
 
+  const handleChangeLeadTag = async (leadId: string, tagId: string | null) => {
+    if (!user?.email) return;
+
+    // Encontra a tag inteira para injetar no objeto caso não seja nula (mantém a UI consistente)
+    const selectedTag = tags.find(t => t.id === tagId) || null;
+
+    // 1. Atualização Otimista na tela
+    const previousFunilLeads = [...funilLeads];
+    setFunilLeads(prev => prev.map(lead => {
+      if (lead.id !== leadId) return lead;
+      return { ...lead, tagId, tag: selectedTag };
+    }));
+
+    try {
+      // 2. Dispara a atualização para o seu backend
+      await api.updateLeadTag(leadId, tagId, user.email); // Certifique-se de plugar esse método no api.ts depois
+    } catch (error) {
+      console.error('Erro ao atualizar tag do lead:', error);
+      // Rollback se a requisição falhar
+      setFunilLeads(previousFunilLeads);
+      alert("Não foi possível atualizar o rótulo do card. Tente novamente.");
+    }
+  };
+
+  const handleManageTags = () => {
+    // Por enquanto, podemos usar um prompt ou abrir o estado de um modal futuro.
+    // Vamos deixar o gatilho ativo para abrir o prompt de criação para o MVP:
+    if (!user?.email) return;
+    
+    const name = prompt("Deseja criar um novo rótulo customizado? Digite o nome:");
+    if (!name || !name.trim()) return;
+
+    const colors = ['#EF4444', '#3B82F6', '#F59E0B', '#10B981', '#8B5CF6', '#EC4899'];
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+    api.createTag(name.trim(), randomColor, user.email)
+      .then(newTag => setTags(prev => [...prev, newTag]))
+      .catch(err => console.error("Erro ao gerenciar tags:", err));
+  };
+
   return {
     radarLeads,
     setRadarLeads,
@@ -179,6 +228,9 @@ export const useCRM = () => {
     handleMoveLead,
     handleAddManualLead,
     buckets,
-    handleCreateColumn
+    tags,
+    handleCreateColumn,
+    handleManageTags,
+    handleChangeLeadTag
   };
 };

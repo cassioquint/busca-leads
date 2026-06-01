@@ -16,4 +16,12 @@ export interface Lead {
   isSaved: boolean;
   googlePlaceId?: string | null;
   bucketId: string;
+  tagId?: string | null;
+  tag?: Tag | null;
+}
+
+export interface Tag {
+  id: string;
+  name: string;
+  color: string;
 }

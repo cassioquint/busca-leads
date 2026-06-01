@@ -14,7 +14,7 @@ const getAuthHeaders = async (): Promise<Record<string, string>> => {
 };
 
 export const api = {
-  // 🔥 ATUALIZADO: Agora aceita o parâmetro dinâmico 'start' (Padrão 0 para a primeira busca)
+  
   async searchLeads(query: string, city: string, user?: string, start: number = 0) {
     let url = `${BASE_URL}/leads?query=${encodeURIComponent(query)}&city=${encodeURIComponent(city)}&start=${start}`;
     
@@ -72,20 +72,6 @@ export const api = {
     return response.json();
   },
 
-  // Atualizado: Alinhado com o novo método PUT do backend (muda de bucket para bucketId)
-  async updateLeadBucket(leadId: string, bucketId: string, user: string) {
-    const headers = await getAuthHeaders();
-    
-    const response = await fetch(`${BASE_URL}/funil/move`, {
-      method: 'PUT',
-      headers,
-      body: JSON.stringify({ leadId, bucketId, user })
-    });
-    
-    if (!response.ok) throw new Error('Falha ao atualizar a coluna do lead no servidor');
-    return response.json();
-  },
-
   // Listar todas as colunas do usuário logado
   async getBuckets(user: string) {
     const headers = await getAuthHeaders();
@@ -107,6 +93,19 @@ export const api = {
     });
 
     if (!response.ok) throw new Error('Falha ao criar nova coluna');
+    return response.json();
+  },
+
+  async updateLeadBucket(leadId: string, bucketId: string, user: string) {
+    const headers = await getAuthHeaders();
+    
+    const response = await fetch(`${BASE_URL}/funil/move`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ leadId, bucketId, user })
+    });
+    
+    if (!response.ok) throw new Error('Falha ao atualizar a coluna do lead no servidor');
     return response.json();
   },
 
@@ -137,5 +136,72 @@ export const api = {
       throw new Error(errorData.error || 'Falha ao deletar coluna');
     }
     return response.json();
-  }
+  },
+
+  // Listar todos os rótulos do usuário logado
+  async getTags(user: string) {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${BASE_URL}/tags?user=${encodeURIComponent(user)}`, {
+      headers
+    });
+
+    if (!response.ok) throw new Error('Erro ao carregar rótulos do Kanban');
+    return response.json();
+  },
+
+  // Criar uma novo Rótulo customizada
+  async createTag(name: string, user: string, color: string) {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${BASE_URL}/tags`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ name, user, color })
+    });
+
+    if (!response.ok) throw new Error('Falha ao criar novo rótulo');
+    return response.json();
+  },
+
+  // Editar o nome ou a cor de um rótulo existente
+  async updateTag(id: string, name: string, color: string) {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${BASE_URL}/tags`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ id, name, color })
+    });
+
+    if (!response.ok) throw new Error('Falha ao atualizar rótulo');
+    return response.json();
+  },
+
+  async updateLeadTag(leadId: string, tagId: string | null, user: string) {
+    const headers = await getAuthHeaders();
+    
+    const response = await fetch(`${BASE_URL}/funil/tag`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ leadId, tagId, user })
+    });
+    
+    if (!response.ok) throw new Error('Falha ao atualizar o rótulo do lead no servidor');
+    return response.json();
+  },
+
+  // Deletar um rótulo (o backend vai barrar se houver leads nela)
+  async deleteTag(id: string, user: string) {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${BASE_URL}/tags`, {
+      method: 'DELETE',
+      headers,
+      body: JSON.stringify({ id, user })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Falha ao deletar rótulo');
+    }
+    return response.json();
+  },
+
 };

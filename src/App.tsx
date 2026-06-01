@@ -11,6 +11,16 @@ function App() {
   
   // Consome a inteligência do contexto de autenticação
   const { user, loading } = useAuth();
+
+  // Se o Firebase ainda estiver pensando, mostra uma tela vazia ou um spinner
+  if (loading) {
+    return <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center">Carregando...</div>;
+  }
+
+  // O CADEADO: Se não tiver usuário logado, barra no LoginView
+  if (!user) {
+    return <LoginView />;
+  }
   
   // 🔥 Desestruturamos as novas propriedades dinâmicas do Kanban vindas do hook
   const { 
@@ -22,19 +32,12 @@ function App() {
     handleSaveLead, 
     handleMoveLead,
     handleAddManualLead,
-    buckets,             // <--- AQUI
-    handleCreateColumn   // <--- AQUI
+    buckets,
+    tags,
+    handleCreateColumn,
+    handleManageTags,
+    handleChangeLeadTag
   } = useCRM();
-
-  // Se o Firebase ainda estiver pensando, mostra uma tela vazia ou um spinner
-  if (loading) {
-    return <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center">Carregando...</div>;
-  }
-
-  // O CADEADO: Se não tiver usuário logado, barra no LoginView
-  if (!user) {
-    return <LoginView />;
-  }
 
   // Se chegou aqui, o usuário está logado! Renderiza o CRM:
   return (
@@ -55,9 +58,12 @@ function App() {
           <FunilView 
             leads={funilLeads} 
             buckets={buckets}
+            tags={tags}
             onMoveLead={handleMoveLead} 
             onAddManualLead={handleAddManualLead}
             onCreateColumn={handleCreateColumn}
+            onManageTags={handleManageTags}
+            onChangeLeadTag={handleChangeLeadTag}
           />
         )}
       </main>
