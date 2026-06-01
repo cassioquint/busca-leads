@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock, ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import type { Lead, Tag } from '../types';
 import { CardDropdown } from './CardDropdown';
 
