@@ -14,9 +14,9 @@ const getAuthHeaders = async (): Promise<Record<string, string>> => {
 };
 
 export const api = {
-  // Busca leads no Radar (Banco Neon ou SerpApi)
-  async searchLeads(query: string, city: string, user?: string) {
-    let url = `${BASE_URL}/leads?query=${encodeURIComponent(query)}&city=${encodeURIComponent(city)}`;
+  // 🔥 ATUALIZADO: Agora aceita o parâmetro dinâmico 'start' (Padrão 0 para a primeira busca)
+  async searchLeads(query: string, city: string, user?: string, start: number = 0) {
+    let url = `${BASE_URL}/leads?query=${encodeURIComponent(query)}&city=${encodeURIComponent(city)}&start=${start}`;
     
     if (user) {
       url += `&user=${encodeURIComponent(user)}`;
@@ -26,7 +26,7 @@ export const api = {
     if (!response.ok) {
       throw new Error('Falha ao buscar os dados na API');
     }
-    return response.json();
+    return response.json(); // Retorna o objeto { source, count, results, pagination }
   },
 
   // Busca os leads salvos no Funil do usuário
@@ -72,7 +72,7 @@ export const api = {
     return response.json();
   },
 
-  // 🔥 ATUALIZADO: Alinhado com o novo método PUT do backend (muda de bucket para bucketId)
+  // Atualizado: Alinhado com o novo método PUT do backend (muda de bucket para bucketId)
   async updateLeadBucket(leadId: string, bucketId: string, user: string) {
     const headers = await getAuthHeaders();
     
@@ -133,7 +133,6 @@ export const api = {
     });
 
     if (!response.ok) {
-      // Captura a mensagem da nossa trava de segurança do backend
       const errorData = await response.json();
       throw new Error(errorData.error || 'Falha ao deletar coluna');
     }
