@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Search, MapPin, Building2 } from 'lucide-react';
-import { CityAutocomplete } from './CityAutocomplete';
+import { CityAutocomplete } from '@/components/common/CityAutocomplete';
 
 interface SearchBarProps {
   onSearch: (query: string, city: string) => void;
@@ -23,10 +23,10 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm space-y-6">
-      
+
       {/* FORMULÁRIO DE BUSCA */}
       <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-3">
-        
+
         {/* INPUT: NICHO */}
         <div className="flex-1 relative">
           <Search className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />

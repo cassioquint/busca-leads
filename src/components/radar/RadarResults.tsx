@@ -1,6 +1,6 @@
 import React from 'react';
-import { LeadCard } from './LeadCard';
-import type { Lead } from '../types';
+import { LeadCard } from './';
+import type { Lead } from '@/types';
 import { ChevronDown } from 'lucide-react';
 
 interface RadarResultsProps {

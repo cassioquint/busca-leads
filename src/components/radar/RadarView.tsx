@@ -1,9 +1,8 @@
 import React from 'react';
-import { SearchBar } from './SearchBar';
-import { RadarResults } from './RadarResults';
-import { useRadar } from '../hooks/useRadar';
+import { SearchBar, RadarResults } from './';
+import { useRadar } from '@/hooks/useRadar';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
-import type { Lead } from '../types';
+import type { Lead } from '@/types';
 
 interface RadarViewProps {
   leads: Lead[];
@@ -13,15 +12,15 @@ interface RadarViewProps {
   onSaveLead: (id: string) => void;
 }
 
-export const RadarView: React.FC<RadarViewProps> = ({ 
-  leads, 
-  setLeads, 
-  hasSearched, 
-  setHasSearched, 
-  onSaveLead 
+export const RadarView: React.FC<RadarViewProps> = ({
+  leads,
+  setLeads,
+  hasSearched,
+  setHasSearched,
+  onSaveLead
 }) => {
   const [animationParent] = useAutoAnimate();
-  
+
   // Consome toda a inteligência e estado do hook isolado
   const {
     activeSubTab,

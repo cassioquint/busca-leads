@@ -1,16 +1,33 @@
 import { useState } from 'react';
-import { Header } from './components/Header';
-import { RadarView } from './components/RadarView';
-import { FunilView } from './components/FunilView';
-import { LoginView } from './components/LoginView';
-import { useCRM } from './hooks/useCRM';
-import { useAuth } from './contexts/AuthContext';
+import { Header } from '../components/layout/Header';
+import { RadarView } from '../components/radar/RadarView';
+import { FunilView } from '../components/crm/FunilView';
+import { LoginView } from './LoginView';
+import { useCRM } from '../hooks/useCRM';
+import { useAuth } from '../contexts/AuthContext';
 
 function App() {
   const [currentTab, setCurrentTab] = useState<'radar' | 'funil'>('radar');
-  
+
   // Consome a inteligência do contexto de autenticação
   const { user, loading } = useAuth();
+
+  // Desestrutura as novas propriedades dinâmicas do Kanban vindas do hook
+  const {
+    radarLeads,
+    setRadarLeads,
+    hasSearched,
+    setHasSearched,
+    funilLeads,
+    handleSaveLead,
+    handleMoveLead,
+    handleAddManualLead,
+    buckets,
+    tags,
+    handleCreateColumn,
+    handleManageTags,
+    handleChangeLeadTag
+  } = useCRM();
 
   // Se o Firebase ainda estiver pensando, mostra uma tela vazia ou um spinner
   if (loading) {
@@ -21,23 +38,6 @@ function App() {
   if (!user) {
     return <LoginView />;
   }
-  
-  // 🔥 Desestruturamos as novas propriedades dinâmicas do Kanban vindas do hook
-  const { 
-    radarLeads, 
-    setRadarLeads, 
-    hasSearched, 
-    setHasSearched, 
-    funilLeads, 
-    handleSaveLead, 
-    handleMoveLead,
-    handleAddManualLead,
-    buckets,
-    tags,
-    handleCreateColumn,
-    handleManageTags,
-    handleChangeLeadTag
-  } = useCRM();
 
   // Se chegou aqui, o usuário está logado! Renderiza o CRM:
   return (
@@ -46,20 +46,20 @@ function App() {
 
       <main className="max-w-7xl mx-auto px-6 py-8">
         {currentTab === 'radar' ? (
-          <RadarView 
-            leads={radarLeads} 
+          <RadarView
+            leads={radarLeads}
             setLeads={setRadarLeads}
             hasSearched={hasSearched}
             setHasSearched={setHasSearched}
-            onSaveLead={handleSaveLead} 
+            onSaveLead={handleSaveLead}
           />
         ) : (
           /* 🔥 Injetamos os dados dinâmicos mapeando os novos props do FunilView */
-          <FunilView 
-            leads={funilLeads} 
+          <FunilView
+            leads={funilLeads}
             buckets={buckets}
             tags={tags}
-            onMoveLead={handleMoveLead} 
+            onMoveLead={handleMoveLead}
             onAddManualLead={handleAddManualLead}
             onCreateColumn={handleCreateColumn}
             onManageTags={handleManageTags}

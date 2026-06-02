@@ -1,6 +1,6 @@
 import React from 'react';
 import { Star, MessageSquare, Bookmark, Check } from 'lucide-react';
-import type { Lead } from '../types';
+import type { Lead } from '@/types';
 
 // A propriedade hideOnSave nem precisa mais existir aqui!
 interface LeadCardProps {

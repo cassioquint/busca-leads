@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Clock } from 'lucide-react';
-import type { Lead, Tag } from '../types';
+import type { Lead, Tag } from '@/types';
 
 interface CardDropdownProps {
     lead: Lead;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
-import type { Lead, Tag } from '../types';
-import { CardDropdown } from './CardDropdown';
+import type { Lead, Tag } from '@/types';
+import { CardDropdown } from './';
 
 interface Bucket {
   id: string;

@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import type { Lead, Tag } from '../types';
+import type { Lead, Tag } from '@/types';
 import { Plus, UserPlus, Tag as TagIcon } from 'lucide-react';
-import { FunilCard } from './FunilCard';
-import { AddLeadModal } from './AddLeadModal';
+import { FunilCard, AddLeadModal } from './';
 
 interface Bucket {
   id: string;
@@ -20,11 +19,11 @@ interface FunilViewProps {
   onChangeLeadTag: (leadId: string, tagId: string | null) => void; // 🔥 NOVO
 }
 
-export const FunilView: React.FC<FunilViewProps> = ({ 
-  leads, 
-  buckets, 
+export const FunilView: React.FC<FunilViewProps> = ({
+  leads,
+  buckets,
   tags,
-  onMoveLead, 
+  onMoveLead,
   onAddManualLead,
   onCreateColumn,
   onManageTags,
@@ -42,9 +41,9 @@ export const FunilView: React.FC<FunilViewProps> = ({
           <p className="text-sm text-slate-500">{savedLeads.length} leads no pipeline</p>
         </div>
         <div className="flex items-center gap-3">
-          
+
           {/* BOTÃO GERENCIAR RÓTULOS */}
-          <button 
+          <button
             onClick={onManageTags}
             className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors cursor-pointer"
           >
@@ -60,7 +59,7 @@ export const FunilView: React.FC<FunilViewProps> = ({
             <span>Novo Lead</span>
           </button>
 
-          <button 
+          <button
             onClick={onCreateColumn}
             className="flex items-center gap-2 px-4 py-2 border border-dashed border-slate-300 text-slate-600 rounded-xl text-sm font-semibold hover:bg-slate-100 transition-colors cursor-pointer"
           >
