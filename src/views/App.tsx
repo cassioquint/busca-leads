@@ -14,6 +14,7 @@ function App() {
 
   // Desestrutura as novas propriedades dinâmicas do Kanban vindas do hook
   const {
+    isLoadingCRM,
     radarLeads,
     setRadarLeads,
     hasSearched,
@@ -54,7 +55,6 @@ function App() {
             onSaveLead={handleSaveLead}
           />
         ) : (
-          /* 🔥 Injetamos os dados dinâmicos mapeando os novos props do FunilView */
           <FunilView
             leads={funilLeads}
             buckets={buckets}
@@ -64,6 +64,7 @@ function App() {
             onCreateColumn={handleCreateColumn}
             onManageTags={handleManageTags}
             onChangeLeadTag={handleChangeLeadTag}
+            isLoading={isLoadingCRM}
           />
         )}
       </main>
