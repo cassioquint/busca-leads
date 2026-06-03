@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { api } from '@/services/api';
-import type { Lead } from '@/types';
+import type { Lead, Bucket, Tag } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 
-export interface Bucket { id: string; name: string; }
-export interface Tag { id: string; name: string; color: string; }
-
 export const useCRMData = () => {
+  const [radarLeads, setRadarLeads] = useState<Lead[]>([]);
+  const [hasSearched, setHasSearched] = useState(false);
   const [funilLeads, setFunilLeads] = useState<Lead[]>([]);
   const [buckets, setBuckets] = useState<Bucket[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
@@ -16,16 +15,15 @@ export const useCRMData = () => {
   useEffect(() => {
     const loadData = async () => {
       if (!user?.email) return;
-
       try {
         setIsLoadingCRM(true);
-        const bucketsData = await api.getBuckets(user.email);
+        const [bucketsData, tagsData, leadsData] = await Promise.all([
+          api.getBuckets(user.email),
+          api.getTags(user.email),
+          api.getFunilLeads(user.email)
+        ]);
         setBuckets(bucketsData);
-
-        const tagsData = await api.getTags(user.email);
         setTags(tagsData);
-
-        const leadsData = await api.getFunilLeads(user.email);
         setFunilLeads(leadsData);
       } catch (error) {
         console.error('Falha ao carregar dados do CRM:', error);
@@ -33,17 +31,15 @@ export const useCRMData = () => {
         setIsLoadingCRM(false);
       }
     };
-
     loadData();
   }, [user?.email]);
 
   return {
-    funilLeads,
-    setFunilLeads,
-    buckets,
-    setBuckets,
-    tags,
-    setTags,
+    radarLeads, setRadarLeads,
+    hasSearched, setHasSearched,
+    funilLeads, setFunilLeads,
+    buckets, setBuckets,
+    tags, setTags,
     isLoadingCRM
   };
 };

@@ -27,7 +27,9 @@ function App() {
     tags,
     handleCreateColumn,
     handleManageTags,
-    handleChangeLeadTag
+    handleChangeLeadTag,
+    handleDeleteLead,
+    handleUpdateLeadNotes
   } = useCRM();
 
   // Se o Firebase ainda estiver pensando, mostra uma tela vazia ou um spinner
@@ -64,6 +66,8 @@ function App() {
             onCreateColumn={handleCreateColumn}
             onManageTags={handleManageTags}
             onChangeLeadTag={handleChangeLeadTag}
+            onDeleteLead={handleDeleteLead}
+            onUpdateLeadNotes={handleUpdateLeadNotes}
             isLoading={isLoadingCRM}
           />
         )}

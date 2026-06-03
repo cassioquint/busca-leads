@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, MessageSquare } from 'lucide-react';
 import type { Lead, Tag } from '@/types';
 import { CardDropdown } from './';
 
@@ -15,6 +15,8 @@ interface FunilCardProps {
   tags: Tag[];
   onMoveLead: (id: string, direction: 'forward' | 'backward') => void;
   onChangeLeadTag: (leadId: string, tagId: string | null) => void;
+  onDeleteLead: (id: string) => void;
+  onCardClick: (lead: Lead) => void;
 }
 
 export const FunilCard: React.FC<FunilCardProps> = ({
@@ -23,7 +25,9 @@ export const FunilCard: React.FC<FunilCardProps> = ({
   buckets = [],
   tags = [],
   onMoveLead,
-  onChangeLeadTag
+  onChangeLeadTag,
+  onDeleteLead,
+  onCardClick
 }) => {
   const todayStr = new Date().toLocaleDateString('pt-BR');
   const isUrgent = lead.followUpDate === todayStr;
@@ -58,9 +62,11 @@ export const FunilCard: React.FC<FunilCardProps> = ({
   );
 
   return (
-    <div className={`group/card bg-white rounded-xl border p-4 shadow-sm space-y-3 relative ${isUrgent ? 'border-amber-400 ring-2 ring-amber-400/10' : 'border-slate-200/80'
-      }`}>
-
+    <div
+      onClick={() => onCardClick(lead)}
+      className={`group/card bg-white rounded-xl border p-4 shadow-sm space-y-3 relative cursor-pointer hover:border-indigo-300 hover:shadow-md transition-all
+        ${isUrgent ? 'border-amber-400 ring-2 ring-amber-400/10' : 'border-slate-200/80'}`}
+    >
       {/* RÓTULO DINÂMICO ADICIONADO */}
       {lead.tag && (
         <div
@@ -87,26 +93,43 @@ export const FunilCard: React.FC<FunilCardProps> = ({
             {lead.type}
           </span>
         </div>
-
-        <CardDropdown
-          lead={lead}
-          tags={tags}
-          todayStr={todayStr}
-          isUrgent={isUrgent}
-          onChangeLeadTag={onChangeLeadTag}
-        />
+        <div onClick={(e) => e.stopPropagation()}>
+          <CardDropdown
+            lead={lead}
+            tags={tags}
+            todayStr={todayStr}
+            isUrgent={isUrgent}
+            onChangeLeadTag={onChangeLeadTag}
+            onDeleteLead={onDeleteLead}
+          />
+        </div>
       </div>
 
       <p className="text-xs text-slate-600 font-medium">{lead.phone}</p>
+
+      {lead.notes && lead.notes.trim() !== '' && (
+        <div className="bg-slate-50/60 border border-slate-100 rounded-lg p-2 flex items-start gap-2 group/notes transition-colors hover:bg-slate-50">
+          <MessageSquare className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+          <p 
+            title={lead.notes} // Abre o balão nativo completo do navegador ao pousar o mouse
+            className="text-[11px] text-slate-500 font-medium leading-relaxed line-clamp-2 break-words select-none"
+          >
+            {lead.notes}
+          </p>
+        </div>
+      )}
 
       {lead.followUpDate && (
         <p className="text-[11px] text-slate-400 font-medium">Follow-up: {lead.followUpDate}</p>
       )}
 
       {/* CONTROLES DE MOVIMENTAÇÃO */}
-      <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs text-indigo-600 font-bold">
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs text-indigo-600 font-bold"
+      >
         <button
-          disabled={isFirstColumn} // 🔥 MUDANÇA: Bloqueia se for a primeira coluna da lista do usuário
+          disabled={isFirstColumn}
           onClick={() => onMoveLead(lead.id, 'backward')}
           className="flex items-center gap-0.5 hover:text-indigo-800 disabled:opacity-0 cursor-pointer transition-colors"
         >
@@ -135,7 +158,7 @@ export const FunilCard: React.FC<FunilCardProps> = ({
         )}
 
         <button
-          disabled={isLastColumn} // 🔥 MUDANÇA: Bloqueia se for a última coluna da lista do usuário
+          disabled={isLastColumn}
           onClick={() => onMoveLead(lead.id, 'forward')}
           className="flex items-center gap-0.5 hover:text-indigo-800 disabled:opacity-0 cursor-pointer transition-colors"
         >

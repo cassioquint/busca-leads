@@ -18,6 +18,13 @@ export interface Lead {
   bucketId: string;
   tagId?: string | null;
   tag?: Tag | null;
+  notes?: string;
+}
+
+export interface Bucket {
+  id: string;
+  name: string;
+  order: number;
 }
 
 export interface Tag {

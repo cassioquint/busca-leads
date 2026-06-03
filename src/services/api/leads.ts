@@ -16,7 +16,7 @@ export const leadApi = {
     const response = await fetch(`${BASE_URL}/funil`, {
       method: 'POST',
       headers,
-      body: JSON.stringify({ prospectId, user }) // Atualizado de leadId para prospectId
+      body: JSON.stringify({ prospectId, user })
     });
     if (!response.ok) throw new Error('Falha ao salvar o lead no banco de dados');
     return response.json();
@@ -62,17 +62,25 @@ export const leadApi = {
   },
 
   // Editar as observações/notas do Lead
-  async updateLeadNotes(id: string, notes: string, user: string) {
-    const headers = await getAuthHeaders();
-    const response = await fetch(`${BASE_URL}/funil/${id}`, {
-      method: 'PUT',
-      headers,
-      body: JSON.stringify({ notes, user })
-    });
+  async updateLeadNotes(id: string, payload: { notes?: string; phone?: string }, user: string) {
+  const headers = await getAuthHeaders();
+  
+  const response = await fetch(`${BASE_URL}/funil/${id}`, {
+    method: 'PUT',
+    headers,
+    body: JSON.stringify({ 
+      notes: payload.notes,
+      phone: payload.phone,
+      user 
+    })
+  });
 
-    if (!response.ok) throw new Error('Falha ao atualizar as anotações do lead');
-    return response.json();
-  },
+  if (!response.ok) {
+    throw new Error('Falha ao atualizar as informações do lead');
+  }
+  
+  return response.json();
+},
 
   // Excluir um Lead definitivamente do funil
   async deleteLead(id: string, user: string) {

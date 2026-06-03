@@ -18,6 +18,8 @@ interface FunilViewProps {
   onCreateColumn: () => void;
   onManageTags: () => void;
   onChangeLeadTag: (leadId: string, tagId: string | null) => void;
+  onDeleteLead: (id: string) => void;
+  onUpdateLeadNotes: (id: string, notes: string, phone: string) => void;
 }
 
 export const FunilView: React.FC<FunilViewProps> = ({
@@ -29,9 +31,13 @@ export const FunilView: React.FC<FunilViewProps> = ({
   onAddManualLead,
   onCreateColumn,
   onManageTags,
-  onChangeLeadTag
+  onChangeLeadTag,
+  onDeleteLead,
+  onUpdateLeadNotes
 }) => {
+
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingLead, setEditingLead] = useState<Lead | null>(null);
   const savedLeads = leads.filter(l => l.isSaved);
 
   return (
@@ -57,7 +63,10 @@ export const FunilView: React.FC<FunilViewProps> = ({
           </button>
 
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              setEditingLead(null);
+              setIsModalOpen(true);
+            }}
             disabled={isLoading}
             className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100 cursor-pointer disabled:opacity-50"
           >
@@ -92,7 +101,13 @@ export const FunilView: React.FC<FunilViewProps> = ({
           </div>
           <h3 className="text-lg font-bold text-slate-800">Seu funil está limpo</h3>
           <p className="text-sm text-slate-500 max-w-md">Use a aba "Radar" para capturar empresas locais da sua região ou insira um registro customizado manual.</p>
-          <button onClick={() => setIsModalOpen(true)} className="mt-4 text-indigo-600 font-bold text-sm hover:underline">
+          <button
+            onClick={() => {
+              setEditingLead(null);
+              setIsModalOpen(true);
+            }}
+            className="mt-4 text-indigo-600 font-bold text-sm hover:underline"
+          >
             Ou cadastre um lead manualmente agora
           </button>
         </div>
@@ -121,6 +136,11 @@ export const FunilView: React.FC<FunilViewProps> = ({
                       tags={tags}
                       onMoveLead={onMoveLead}
                       onChangeLeadTag={onChangeLeadTag}
+                      onDeleteLead={onDeleteLead}
+                      onCardClick={(clickedLead) => {
+                        setEditingLead(clickedLead);
+                        setIsModalOpen(true);
+                      }}
                     />
                   ))}
                 </div>
@@ -132,10 +152,20 @@ export const FunilView: React.FC<FunilViewProps> = ({
 
       <AddLeadModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={(data) => {
-          onAddManualLead(data);
+        onClose={() => {
           setIsModalOpen(false);
+          setEditingLead(null);
+        }}
+        initialLead={editingLead}
+        isEditMode={!!editingLead}
+        onSubmit={(data) => {
+          if (editingLead) {
+            onUpdateLeadNotes(editingLead.id, data.notes, data.phone);
+          } else {
+            onAddManualLead(data);
+          }
+          setIsModalOpen(false);
+          setEditingLead(null);
         }}
       />
     </div>
