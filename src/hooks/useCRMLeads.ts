@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useRef } from 'react';
 import { api } from '@/services/api';
 import type { Lead, Bucket, Tag } from '@/types';
 
