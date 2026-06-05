@@ -13,6 +13,7 @@ interface FunilViewProps {
   buckets: Bucket[];
   tags: Tag[];
   isLoading?: boolean;
+  isRadarOpen: boolean;
   onMoveLead: (id: string, direction: 'forward' | 'backward') => void;
   onAddManualLead: (data: any) => void;
   onCreateColumn: (name: string) => void;
@@ -27,6 +28,7 @@ export const FunilView: React.FC<FunilViewProps> = ({
   buckets,
   tags,
   isLoading = false,
+  isRadarOpen,
   onMoveLead,
   onAddManualLead,
   onCreateColumn,
@@ -43,9 +45,10 @@ export const FunilView: React.FC<FunilViewProps> = ({
   const savedLeads = leads.filter(l => l.isSaved);
 
   return (
-    <div className="space-y-6">
-      {/* CABEÇALHO DO FUNIL */}
-      <div className="flex items-center justify-between">
+    <div className="flex-1 h-full flex flex-col overflow-hidden p-6 space-y-6">
+      
+      {/* CABEÇALHO DO FUNIL (Fixo no Topo) */}
+      <div className="flex items-center justify-between shrink-0">
         <div>
           <h2 className="text-2xl font-bold text-slate-900">Funil de Vendas</h2>
           <p className="text-sm text-slate-500">
@@ -87,22 +90,22 @@ export const FunilView: React.FC<FunilViewProps> = ({
         </div>
       </div>
 
-      {/* 🌟 TRATAMENTO DOS ESTADOS DE TELA */}
+      {/* TRATAMENTO DOS ESTADOS DE TELA */}
       {isLoading ? (
-        /* 1. TELA DE CARREGAMENTO (Aparece enquanto o Neon responde) */
-        <div className="bg-white rounded-2xl border border-slate-200 p-16 text-center shadow-sm flex flex-col items-center justify-center space-y-3 min-h-[400px]">
+        /* 1. TELA DE CARREGAMENTO */
+        <div className="flex-1 bg-white rounded-2xl border border-slate-200 p-16 text-center shadow-sm flex flex-col items-center justify-center space-y-3">
           <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
           <h3 className="text-base font-semibold text-slate-700">Carregando seu CRM...</h3>
           <p className="text-sm text-slate-400 max-w-xs">Buscando as colunas e os cards salvos direto do servidor.</p>
         </div>
       ) : savedLeads.length === 0 ? (
-        /* 2. TELA DE ESTADO VAZIO DEFINITIVO (Só aparece se terminar de carregar e não tiver nada) */
-        <div className="bg-white rounded-2xl border-2 border-dashed border-slate-200/80 p-16 text-center shadow-sm max-w-2xl mx-auto mt-8 flex flex-col items-center justify-center space-y-4">
+        /* 2. TELA DE ESTADO VAZIO DEFINITIVO */
+        <div className="flex-1 bg-white rounded-2xl border-2 border-dashed border-slate-200/80 p-16 text-center shadow-sm flex flex-col items-center justify-center space-y-4 overflow-y-auto">
           <div className="p-3 bg-slate-50 text-slate-400 rounded-full">
             <UserPlus className="w-6 h-6" />
           </div>
           <h3 className="text-lg font-bold text-slate-800">Seu funil está limpo</h3>
-          <p className="text-sm text-slate-500 max-w-md">Use a aba "Radar" para capturar empresas locais da sua região ou insira um registro customizado manual.</p>
+          <p className="text-sm text-slate-500 max-w-md">Use o "Radar de Prospecção" ao lado para capturar empresas locais da sua região ou insira um registro customizado manual.</p>
           <button
             onClick={() => {
               setEditingLead(null);
@@ -114,21 +117,25 @@ export const FunilView: React.FC<FunilViewProps> = ({
           </button>
         </div>
       ) : (
-        /* 3. GRID DO KANBAN DINÂMICO (Quando há leads carregados) */
-        <div className="flex gap-4 overflow-x-auto pb-4 items-start">
+        /* 3. GRID DO KANBAN DINÂMICO */
+        <div className="flex-1 flex gap-4 overflow-x-auto pb-3 items-start custom-scrollbar">
           {buckets.map((col) => {
             const columnLeads = savedLeads.filter(l => l.bucketId === col.id);
 
             return (
-              <div key={col.id} className="w-80 bg-slate-100/70 border border-slate-200/60 rounded-2xl p-4 flex flex-col space-y-3 shrink-0">
-                <div className="flex items-center justify-between px-1">
-                  <h4 className="font-bold text-sm text-slate-700">{col.name}</h4>
-                  <span className="bg-slate-200/80 text-slate-600 text-xs font-bold px-2 py-0.5 rounded-md">
+              <div 
+                key={col.id} 
+                className="w-80 max-h-full bg-slate-100/70 border border-slate-200/60 rounded-2xl p-4 flex flex-col space-y-3 shrink-0 overflow-hidden"
+              >
+                <div className="flex items-center justify-between px-1 shrink-0">
+                  <h4 className="font-bold text-sm text-slate-700 truncate max-w-[200px]">{col.name}</h4>
+                  <span className="bg-slate-200/80 text-slate-600 text-xs font-bold px-2 py-0.5 rounded-md shrink-0">
                     {columnLeads.length}
                   </span>
                 </div>
 
-                <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
+                {/* Área interna de rolagem dos cards */}
+                <div className="flex-1 space-y-3 overflow-y-auto pr-1 custom-scrollbar">
                   {columnLeads.map((lead) => (
                     <FunilCard
                       key={lead.id}

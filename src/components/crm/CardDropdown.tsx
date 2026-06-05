@@ -1,156 +1,193 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Clock, Trash2 } from 'lucide-react';
-import type { Lead, Tag } from '@/types';
+import React, { useState, useEffect, useRef } from 'react';
+import { Clock, Trash2, Calendar, Tag, Plus } from 'lucide-react';
+import type { Lead, Tag as TagType } from '@/types';
 
 interface CardDropdownProps {
-    lead: Lead;
-    tags: Tag[];
-    todayStr: string;
-    isUrgent: boolean;
-    onChangeLeadTag: (leadId: string, tagId: string | null) => void;
-    onDeleteLead: (id: string) => void;
+  lead: Lead;
+  tags: TagType[];
+  onChangeLeadTag: (leadId: string, tagId: string | null) => void;
+  onDeleteLead: (id: string) => void;
+  onUpdateFollowUp?: (leadId: string, date: string | null) => void;
 }
 
 export const CardDropdown: React.FC<CardDropdownProps> = ({
-    lead,
-    tags,
-    todayStr,
-    isUrgent,
-    onChangeLeadTag,
-    onDeleteLead,
+  lead,
+  tags,
+  onChangeLeadTag,
+  onDeleteLead,
+  onUpdateFollowUp
 }) => {
-    const [showMenu, setShowMenu] = useState(false);
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const menuRef = useRef<HTMLDivElement>(null);
+  const [showMenu, setShowMenu] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  
+  // Guardará as coordenadas (X e Y) exatas de onde o menu deve brotar na tela
+  const [menuCoords, setMenuCoords] = useState({ top: 0, left: 0 });
+  
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-                setShowMenu(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
+  // Captura o clique e calcula a posição geográfica exata do botão na viewport
+  const handleToggleMenu = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      
+      // Abre o menu colado abaixo do botão, alinhado à direita dele (com margem de segurança)
+      setMenuCoords({
+        top: rect.bottom + window.scrollY + 6,
+        left: rect.right - 200 // 200px é a largura (w-50) do nosso menu
+      });
+    }
+    setShowMenu(!showMenu);
+  };
 
-    const handleDeleteClick = () => {
-        setShowDeleteModal(true);
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setShowMenu(false);
+      }
     };
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showMenu]);
 
-    const handleConfirmDelete = () => {
-        onDeleteLead(lead.id);
-        setShowDeleteModal(false);
-    };
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true);
+    setShowMenu(false);
+  };
 
-    return (
-        <div className="relative shrink-0" ref={menuRef}>
-            <button
-                onClick={() => setShowMenu(!showMenu)}
-                className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-md transition-all opacity-0 group-hover/card:opacity-100 focus:opacity-100 cursor-pointer block"
-                style={{ opacity: showMenu ? 1 : undefined }}
-                title="Ações do lead"
+  // 🌟 FIX: Declarada a função de confirmação que estava faltando no escopo!
+  const handleConfirmDelete = () => {
+    onDeleteLead(lead.id);
+    setShowDeleteModal(false);
+  };
+
+  // 🌟 FIX: Tipagem do parâmetro ajustada para aceitar string, null ou undefined e evitar conflitos
+  const getInputValue = (dateStr: string | null | undefined) => {
+    if (!dateStr) return '';
+    const parts = dateStr.split('/');
+    if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    return dateStr;
+  };
+
+  const handleDateChange = (isoDate: string) => {
+    if (!isoDate) {
+      if (onUpdateFollowUp) onUpdateFollowUp(lead.id, null);
+      return;
+    }
+    const [year, month, day] = isoDate.split('-');
+    const formattedDate = `${day}/${month}/${year}`;
+    if (onUpdateFollowUp) onUpdateFollowUp(lead.id, formattedDate);
+    setShowMenu(false);
+  };
+
+  return (
+    <div className="relative shrink-0">
+      <button
+        ref={buttonRef}
+        type="button"
+        onClick={handleToggleMenu}
+        className="p-1 text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 rounded-md transition-all opacity-0 group-hover/card:opacity-100 focus:opacity-100 cursor-pointer block"
+        style={{ opacity: showMenu ? 1 : undefined }}
+        title="Ações do lead"
+      >
+        <span className="text-base font-bold tracking-widest leading-none block -mt-1">...</span>
+      </button>
+
+      {/* RENDERIZAÇÃO COM MENU FIXED (Tema Claro) */}
+      {showMenu && (
+        <div
+          ref={menuRef}
+          style={{ 
+            position: 'fixed', 
+            top: `${menuCoords.top}px`, 
+            left: `${menuCoords.left}px` 
+          }}
+          className="z-[9999] w-50 bg-white border border-slate-200/80 rounded-xl shadow-2xl p-1.5 animate-in fade-in zoom-in-95 duration-100 text-left space-y-0.5"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Opção: Adicionar ao Dia */}
+          <button
+            type="button"
+            className="w-full text-left text-xs text-slate-600 hover:bg-slate-50 hover:text-indigo-600 font-semibold px-2.5 py-2 rounded-lg transition-all flex items-center gap-2.5 cursor-pointer"
+          >
+            <Plus className="w-4 h-4 text-slate-400 group-hover:text-indigo-500" />
+            <span>Adicionar ao Meu Dia</span>
+          </button>
+
+          {/* Seção: Rótulos Integrada */}
+          <div className="px-2.5 py-1.5 space-y-1">
+            <div className="flex items-center gap-2.5 text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+              <Tag className="w-3.5 h-3.5 text-slate-400" />
+              <span>Rótulo</span>
+            </div>
+            <select
+              value={lead.tagId || ''}
+              onChange={(e) => {
+                onChangeLeadTag(lead.id, e.target.value || null);
+                setShowMenu(false);
+              }}
+              className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-slate-700 font-medium outline-none cursor-pointer focus:border-indigo-500 focus:bg-white transition-all"
             >
-                <span className="text-base font-bold tracking-widest leading-none block -mt-1">...</span>
-            </button>
+              <option value="">Sem Rótulo</option>
+              {tags.map(t => (
+                <option key={t.id} value={t.id}>{t.name}</option>
+              ))}
+            </select>
+          </div>
 
-            {showMenu && (
-                <div className="absolute right-0 top-7 w-48 bg-white border border-slate-200/80 rounded-xl shadow-xl z-30 p-2 animate-in fade-in slide-in-from-top-1 duration-100">
-                    {/* Seção: Rótulos */}
-                    <div className="space-y-1">
-                        <label className="block text-[10px] font-bold text-slate-400 px-2 pt-1 uppercase tracking-wider">
-                            Definir Rótulo
-                        </label>
-                        <select
-                            value={lead.tagId || ''}
-                            onChange={(e) => {
-                                onChangeLeadTag(lead.id, e.target.value || null);
-                                setShowMenu(false);
-                            }}
-                            className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-slate-700 font-medium outline-none cursor-pointer hover:bg-slate-100 transition-colors"
-                        >
-                            <option value="">Sem Rótulo</option>
-                            {tags.map(t => (
-                                <option key={t.id} value={t.id}>{t.name}</option>
-                            ))}
-                        </select>
-                    </div>
+          <div className="border-t border-slate-100 my-1" />
 
-                    <div className="my-1.5 border-t border-slate-100" />
+          {/* Seção: Agendamento Retomada */}
+          <div className="px-2.5 py-1.5 space-y-1">
+            <div className="flex items-center gap-2.5 text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+              <Clock className="w-3.5 h-3.5 text-slate-400" />
+              <span>Agendar Retomada</span>
+            </div>
+            <div className="relative w-full">
+              <Calendar className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
+              <input 
+                type="date"
+                value={getInputValue(lead.followUpDate)}
+                onChange={(e) => handleDateChange(e.target.value)}
+                className="w-full text-left text-xs text-slate-600 font-medium px-2 py-1.5 rounded-lg bg-slate-50 border border-slate-200 outline-none focus:border-indigo-500 cursor-pointer focus:bg-white transition-all"
+              />
+            </div>
+          </div>
 
-                    {/* Seção: Agendamento */}
-                    <div className="space-y-1">
-                        <label className="block text-[10px] font-bold text-slate-400 px-2 uppercase tracking-wider">
-                            Agendar Retomada
-                        </label>
-                        <button
-                            onClick={() => {
-                                const dataInput = prompt("Defina a data de follow-up (DD/MM/AAAA):", lead.followUpDate || todayStr);
-                                if (dataInput !== null) {
-                                    alert(`Agendado para: ${dataInput}`);
-                                }
-                                setShowMenu(false);
-                            }}
-                            className="w-full text-left text-xs text-slate-600 hover:text-indigo-600 font-semibold px-2 py-1.5 rounded-lg hover:bg-indigo-50/50 transition-colors flex items-center gap-1.5 cursor-pointer"
-                        >
-                            <Clock className={`w-3.5 h-3.5 ${isUrgent ? 'text-amber-500' : 'text-slate-400'}`} />
-                            <span>{lead.followUpDate ? 'Alterar Data' : 'Definir Data'}</span>
-                        </button>
-                    </div>
+          <div className="border-t border-slate-100 my-1" />
 
-                    {/* 🌟 Divisor e Nova Seção: Operações Perigosas */}
-                    <div className="my-1.5 border-t border-slate-100" />
-
-                    <div className="space-y-1">
-                        <button
-                            onClick={handleDeleteClick}
-                            className="w-full text-left text-xs text-red-600 hover:bg-red-50 font-semibold px-2 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
-                        >
-                            <Trash2 className="w-3.5 h-3.5 text-red-500" />
-                            <span>Excluir Lead</span>
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {showDeleteModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    {/* Backdrop escurecido e desfocado */}
-                    <div 
-                        className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm"
-                        onClick={() => setShowDeleteModal(false)}
-                    />
-                    
-                    {/* Caixa do Modal */}
-                    <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-sm w-full p-6 relative z-10 animate-in zoom-in-95 duration-200 flex flex-col items-center text-center space-y-4">
-                        <div className="p-3 bg-red-50 text-red-600 rounded-full">
-                            <Trash2 className="w-6 h-6" />
-                        </div>
-                        
-                        <div className="space-y-1">
-                            <h4 className="text-base font-bold text-slate-900">Excluir este Lead?</h4>
-                            <p className="text-xs text-slate-500 leading-relaxed">
-                                Tem certeza que deseja remover <strong className="text-slate-700 font-semibold">"{lead.title}"</strong>? Esta ação não poderá ser desfeita.
-                            </p>
-                        </div>
-
-                        <div className="flex items-center gap-3 w-full pt-2">
-                            <button
-                                onClick={() => setShowDeleteModal(false)}
-                                className="flex-1 px-4 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 text-xs font-semibold rounded-xl transition-colors cursor-pointer"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                onClick={handleConfirmDelete}
-                                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl shadow-md shadow-red-100 transition-colors cursor-pointer"
-                            >
-                                Sim, Excluir
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+          {/* Opção: Excluir Lead */}
+          <button
+            type="button"
+            onClick={handleDeleteClick}
+            className="w-full text-left text-xs text-red-600 hover:bg-red-50 font-bold px-2.5 py-2 rounded-lg transition-colors flex items-center gap-2.5 cursor-pointer"
+          >
+            <Trash2 className="w-4 h-4 text-red-500" />
+            <span>Excluir</span>
+          </button>
         </div>
-    );
+      )}
+
+      {/* MODAL DE DELEÇÃO */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowDeleteModal(false)} />
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-sm w-full p-6 relative z-10 animate-in zoom-in-95 duration-200 flex flex-col items-center text-center space-y-4">
+            <div className="p-3 bg-red-50 text-red-600 rounded-full"><Trash2 className="w-6 h-6" /></div>
+            <div className="space-y-1">
+              <h4 className="text-base font-bold text-slate-900">Excluir este Lead?</h4>
+              <p className="text-xs text-slate-500 leading-relaxed">Tem certeza que deseja remover <strong>"{lead.title}"</strong>?</p>
+            </div>
+            <div className="flex items-center gap-3 w-full pt-2">
+              <button type="button" onClick={() => setShowDeleteModal(false)} className="flex-1 px-4 py-2 bg-slate-50 border border-slate-200 text-slate-600 text-xs font-semibold rounded-xl cursor-pointer">Cancelar</button>
+              <button type="button" onClick={handleConfirmDelete} className="flex-1 px-4 py-2 bg-red-600 text-white text-xs font-bold rounded-xl shadow-md shadow-red-100 cursor-pointer">Sim, Excluir</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };

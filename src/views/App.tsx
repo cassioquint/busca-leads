@@ -7,12 +7,12 @@ import { useCRM } from '../hooks/useCRM';
 import { useAuth } from '../contexts/AuthContext';
 
 function App() {
-  const [currentTab, setCurrentTab] = useState<'radar' | 'funil'>('radar');
+  const [isRadarOpen, setIsRadarOpen] = useState(true);
 
   // Consome a inteligência do contexto de autenticação
   const { user, loading } = useAuth();
 
-  // Desestrutura as novas propriedades dinâmicas do Kanban vindas do hook
+  // Desestrutura as propriedades dinâmicas do Kanban vindas do hook especialista
   const {
     isLoadingCRM,
     radarLeads,
@@ -32,7 +32,7 @@ function App() {
     handleUpdateLeadNotes
   } = useCRM();
 
-  // Se o Firebase ainda estiver pensando, mostra uma tela vazia ou um spinner
+  // Se o Firebase ainda estiver pensando, mostra a tela de carregamento
   if (loading) {
     return <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center">Carregando...</div>;
   }
@@ -42,35 +42,40 @@ function App() {
     return <LoginView />;
   }
 
-  // Se chegou aqui, o usuário está logado! Renderiza o CRM:
+  // Renderiza a interface unificada do CRM
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans antialiased">
-      <Header currentTab={currentTab} setCurrentTab={setCurrentTab} />
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans antialiased flex flex-col h-screen overflow-hidden">
+      <Header />
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        {currentTab === 'radar' ? (
-          <RadarView
-            leads={radarLeads}
-            setLeads={setRadarLeads}
-            hasSearched={hasSearched}
-            setHasSearched={setHasSearched}
-            onSaveLead={handleSaveLead}
-          />
-        ) : (
-          <FunilView
-            leads={funilLeads}
-            buckets={buckets}
-            tags={tags}
-            onMoveLead={handleMoveLead}
-            onAddManualLead={handleAddManualLead}
-            onCreateColumn={handleCreateColumn}
-            onManageTags={handleManageTags}
-            onChangeLeadTag={handleChangeLeadTag}
-            onDeleteLead={handleDeleteLead}
-            onUpdateLeadNotes={handleUpdateLeadNotes}
-            isLoading={isLoadingCRM}
-          />
-        )}
+      <main className="flex-1 w-full flex overflow-hidden relative">
+        
+        {/* 1. SIDEBAR ESQUERDA: Radar de Prospecção */}
+        <RadarView
+          isOpen={isRadarOpen}
+          setIsOpen={setIsRadarOpen}
+          leads={radarLeads}
+          setLeads={setRadarLeads}
+          hasSearched={hasSearched}
+          setHasSearched={setHasSearched}
+          onSaveLead={handleSaveLead}
+        />
+
+        {/* 2. ÁREA PRINCIPAL/DIREITA: Quadro Kanban do Funil */}
+        <FunilView
+          leads={funilLeads}
+          buckets={buckets}
+          tags={tags}
+          onMoveLead={handleMoveLead}
+          onAddManualLead={handleAddManualLead}
+          onCreateColumn={handleCreateColumn}
+          onManageTags={handleManageTags}
+          onChangeLeadTag={handleChangeLeadTag}
+          onDeleteLead={handleDeleteLead}
+          onUpdateLeadNotes={handleUpdateLeadNotes}
+          isLoading={isLoadingCRM}
+          isRadarOpen={isRadarOpen}
+        />
+        
       </main>
     </div>
   );

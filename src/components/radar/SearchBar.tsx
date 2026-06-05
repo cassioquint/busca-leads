@@ -22,66 +22,68 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm space-y-6">
-
-      {/* FORMULÁRIO DE BUSCA */}
-      <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-3">
-
-        {/* INPUT: NICHO */}
-        <div className="flex-1 relative">
-          <Search className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="O que você procura? (Ex: Barbearia, Oficina, Clínica Estética)"
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-4 py-3.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all"
-          />
-        </div>
-
-        {/* INPUT COMPONENTE: CIDADE COM AUTOCOMPLETE */}
-        <CityAutocomplete value={city} onChange={setCity} />
-
-        {/* BOTÃO PRINCIPAL DE TRIGGER */}
-        <button
-          type="submit"
-          className="bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white font-bold text-sm px-8 py-3.5 rounded-xl shadow-md shadow-indigo-100 transition-all flex items-center justify-center gap-2"
-        >
-          <span>Buscar Leads</span>
-        </button>
-      </form>
-
-      <div className="h-px bg-slate-100 w-full" />
+    <div className="w-full space-y-4">
 
       {/* SUB-ABAS DE ORIGEM DE DADOS */}
-      <div className="flex flex-wrap gap-4 items-center">
+      <div className="grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
         <button
+          type="button"
           onClick={() => setActiveSubTab('maps')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold border transition-all ${
+          className={`flex items-center justify-center gap-1.5 py-2 px-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
             activeSubTab === 'maps'
-              ? 'bg-indigo-50 border-indigo-200 text-indigo-600 shadow-sm'
-              : 'bg-white border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+              ? 'bg-white text-indigo-600 shadow-sm border border-slate-200/50'
+              : 'text-slate-500 hover:text-slate-800'
           }`}
         >
-          <MapPin className="w-4 h-4" />
-          <span>Resultados do Google Maps</span>
+          <MapPin className="w-3.5 h-3.5" />
+          <span>Google Maps</span>
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveSubTab('inauguracoes')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold border transition-all relative ${
+          className={`flex items-center justify-center gap-1.5 py-2 px-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
             activeSubTab === 'inauguracoes'
-              ? 'bg-amber-50/60 border-amber-200 text-amber-700 shadow-sm'
-              : 'bg-white border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+              ? 'bg-white text-amber-700 shadow-sm border border-slate-200/50'
+              : 'text-slate-500 hover:text-slate-800'
           }`}
         >
-          <Building2 className="w-4 h-4" />
-          <span>Radar de Inaugurações (CNPJs Recém-Abertos)</span>
-          <span className="flex h-5 w-9 items-center justify-center rounded-md bg-amber-500 text-[10px] font-extrabold text-white uppercase tracking-wider animate-pulse">
+          <Building2 className="w-3.5 h-3.5" />
+          <span>Inaugurações</span>
+          <span className="flex h-3.5 w-6 items-center justify-center rounded bg-amber-500 text-[8px] font-black text-white uppercase tracking-wider scale-90">
             Hot
           </span>
         </button>
       </div>
+
+      {/* FORMULÁRIO DE BUSCA */}
+      <form onSubmit={handleSubmit} className="flex flex-col gap-2.5">
+
+        {/* INPUT: NICHO */}
+        <div className="relative w-full">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="O que procura? (Ex: Oficina, Estética)"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all"
+          />
+        </div>
+
+        {/* INPUT COMPONENTE: CIDADE COM AUTOCOMPLETE */}
+        <div className="w-full">
+          <CityAutocomplete value={city} onChange={setCity} />
+        </div>
+
+        {/* BOTÃO PRINCIPAL DE TRIGGER */}
+        <button
+          type="submit"
+          className="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-bold text-xs py-3 rounded-xl shadow-md shadow-indigo-100 transition-all flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <span>Buscar Leads no Radar</span>
+        </button>
+      </form>
     </div>
   );
 };

@@ -13,6 +13,7 @@ export const CityAutocomplete: React.FC<CityAutocompleteProps> = ({ value, onCha
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const fetchCities = async () => {
@@ -60,6 +61,7 @@ export const CityAutocomplete: React.FC<CityAutocompleteProps> = ({ value, onCha
   };
 
   const handleSelectCity = (selectedCity: string) => {
+    if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
     onChange(selectedCity);
     setShowDropdown(false);
     setHighlightedIndex(-1);
@@ -72,12 +74,12 @@ export const CityAutocomplete: React.FC<CityAutocompleteProps> = ({ value, onCha
       e.preventDefault();
       const nextIndex = highlightedIndex < filteredCities.length - 1 ? highlightedIndex + 1 : 0;
       setHighlightedIndex(nextIndex);
-      onChange(filteredCities[nextIndex]); // 🔥 Atualiza o campo com a seta para baixo
+      onChange(filteredCities[nextIndex]);
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       const prevIndex = highlightedIndex > 0 ? highlightedIndex - 1 : filteredCities.length - 1;
       setHighlightedIndex(prevIndex);
-      onChange(filteredCities[prevIndex]); // 🔥 Atualiza o campo com a seta para cima
+      onChange(filteredCities[prevIndex]);
     } else if (e.key === 'Enter') {
       if (highlightedIndex >= 0) {
         e.preventDefault();
@@ -90,25 +92,23 @@ export const CityAutocomplete: React.FC<CityAutocompleteProps> = ({ value, onCha
   };
 
   const handleBlur = () => {
-    // Dá um tempinho pro clique no dropdown ser processado antes de fechar/corrigir
-    setTimeout(() => {
+    blurTimeoutRef.current = setTimeout(() => {
       setShowDropdown(false);
 
       if (value.length > 0) {
-        // Procura a cidade mais próxima (ou a primeira que contenha o texto)
         const exactMatch = allCities.find(c => c.toLowerCase() === value.toLowerCase());
         const fuzzyMatch = allCities.find(c => c.toLowerCase().includes(value.toLowerCase()));
 
         if (!exactMatch && fuzzyMatch) {
-          onChange(fuzzyMatch); // Corrige para a cidade encontrada
+          onChange(fuzzyMatch);
         }
       }
     }, 200);
   };
 
   return (
-    <div className="w-full md:w-80 relative" ref={dropdownRef}>
-      <MapPin className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 z-10" />
+    <div className="w-full relative" ref={dropdownRef}>
+      <MapPin className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 z-10" />
       <input
         type="text"
         value={value}
@@ -117,21 +117,27 @@ export const CityAutocomplete: React.FC<CityAutocompleteProps> = ({ value, onCha
         onBlur={handleBlur}
         onFocus={() => value.length > 1 && setShowDropdown(true)}
         placeholder="Ex: Novo Hamburgo, Estância Velha"
-        className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-4 py-3.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all relative z-0"
+        className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-all relative z-0"
         autoComplete="off"
       />
 
+      {/* Dropdown Flutuante Ajustado */}
       {showDropdown && filteredCities.length > 0 && (
-        <ul className="absolute z-50 w-full bg-white border border-slate-200 rounded-xl mt-1 shadow-xl overflow-hidden max-h-60 overflow-y-auto">
+        <ul className="absolute z-50 w-full bg-white border border-slate-200 rounded-xl mt-1 shadow-xl overflow-hidden max-h-48 overflow-y-auto">
           {filteredCities.map((suggestion, index) => (
             <li
               key={index}
-              onClick={() => handleSelectCity(suggestion)}
+              onMouseDown={(e) => {
+                // Previne o blur do input de disparar antes do clique ser registrado
+                e.preventDefault(); 
+                handleSelectCity(suggestion);
+              }}
               onMouseEnter={() => setHighlightedIndex(index)}
-              className={`px-4 py-3 text-sm cursor-pointer transition-colors border-b border-slate-50 last:border-0 ${highlightedIndex === index
-                  ? 'bg-indigo-50 text-indigo-700 font-medium'
-                  : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-700'
-                }`}
+              className={`px-3.5 py-2 text-xs cursor-pointer transition-colors border-b border-slate-50 last:border-0 ${
+                highlightedIndex === index
+                  ? 'bg-indigo-50 text-indigo-700 font-bold'
+                  : 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-700'
+              }`}
             >
               {suggestion}
             </li>
