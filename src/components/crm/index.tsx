@@ -4,3 +4,4 @@ export { CardDropdown } from './CardDropdown';
 export { FunilCard } from './FunilCard';
 export { FunilView } from './FunilView';
 export { FunilColumn } from './FunilColumn';
+export { FunilHeader } from './FunilHeader';

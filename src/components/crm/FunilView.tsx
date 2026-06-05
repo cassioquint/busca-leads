@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { Lead, Tag } from '@/types';
-import { Plus, UserPlus, Tag as TagIcon, Loader2 } from 'lucide-react';
-import { AddLeadModal, AddColumnModal, FunilColumn } from './';
+import { Loader2, UserPlus } from 'lucide-react';
+import { AddLeadModal, AddColumnModal, FunilColumn, FunilHeader } from './';
 import { ConfirmDeleteModal } from '@/components/common/ConfirmDeleteModal';
 import { ManageTagsModal } from './ManageTagsModal';
 
@@ -100,43 +100,16 @@ export const FunilView: React.FC<FunilViewProps> = ({
   return (
     <div className="flex-1 h-full flex flex-col overflow-hidden p-6 space-y-6">
 
-      {/* CABEÇALHO DO FUNIL */}
-      <div className="flex items-center justify-between shrink-0">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-900">Funil de Vendas</h2>
-          <p className="text-sm text-slate-500">
-            {isLoading ? 'Buscando seu pipeline...' : `${savedLeads.length} leads no pipeline`}
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setIsTagsModalOpen(true)}
-            disabled={isLoading}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors cursor-pointer disabled:opacity-50"
-          >
-            <TagIcon className="w-4 h-4 text-slate-400" />
-            <span>Rótulos</span>
-          </button>
-
-          <button
-            onClick={() => { setEditingLead(null); setIsModalOpen(true); }}
-            disabled={isLoading}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100 cursor-pointer disabled:opacity-50"
-          >
-            <UserPlus className="w-4 h-4" />
-            <span>Novo Lead</span>
-          </button>
-
-          <button
-            onClick={handleOpenCreateColumn}
-            disabled={isLoading}
-            className="flex items-center gap-2 px-4 py-2 border border-dashed border-slate-300 text-slate-600 rounded-xl text-sm font-semibold hover:bg-slate-100 transition-colors cursor-pointer disabled:opacity-50"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Nova Coluna</span>
-          </button>
-        </div>
-      </div>
+      {/* CABEÇALHO DO FUNIL FRAGMENTADO EM SUBCOMPONENTE */}
+      <FunilHeader
+        savedLeads={savedLeads}
+        buckets={buckets}
+        tags={tags}
+        isLoading={isLoading}
+        onNewLeadClick={() => { setEditingLead(null); setIsModalOpen(true); }}
+        onManageTagsClick={() => setIsTagsModalOpen(true)}
+        onNewColumnClick={handleOpenCreateColumn}
+      />
 
       {/* CORE DE TELAS */}
       {isLoading ? (
@@ -149,7 +122,7 @@ export const FunilView: React.FC<FunilViewProps> = ({
           <div className="p-3 bg-slate-50 text-slate-400 rounded-full"><UserPlus className="w-6 h-6" /></div>
           <h3 className="text-lg font-bold text-slate-800">Seu funil está limpo</h3>
           <p className="text-sm text-slate-500 max-w-md">Use o "Radar de Prospecção" ao lado para capturar empresas.</p>
-          <button onClick={() => { setEditingLead(null); setIsModalOpen(true); }} className="mt-4 text-indigo-600 font-bold text-sm hover:underline">
+          <button type="button" onClick={() => { setEditingLead(null); setIsModalOpen(true); }} className="mt-4 text-indigo-600 font-bold text-sm hover:underline">
             Ou cadastre um lead manualmente agora
           </button>
         </div>
@@ -166,8 +139,8 @@ export const FunilView: React.FC<FunilViewProps> = ({
               onMoveLead={onMoveLead}
               onChangeLeadTag={onChangeLeadTag}
               onDeleteLead={onDeleteLead}
-              onRenameColumn={handleOpenRenameColumn} // 🌟 Escuta o chamado de edição
-              onDeleteColumn={handleOpenDeleteColumn} // 🌟 Escuta o chamado de exclusão
+              onRenameColumn={handleOpenRenameColumn}
+              onDeleteColumn={handleOpenDeleteColumn}
               onMoveColumn={onMoveColumn}
               isFirst={index === 0}
               isLast={index === buckets.length - 1}
@@ -197,7 +170,7 @@ export const FunilView: React.FC<FunilViewProps> = ({
         }}
       />
 
-      {/* 🌟 ADAPTADO: MODAL DE COLUNA COMPARTILHADO (Cria ou Edita) */}
+      {/* MODAL DE COLUNA COMPARTILHADO (Cria ou Edita) */}
       <AddColumnModal
         key={activeColumn ? `edit-${activeColumn.id}` : 'create'}
         isOpen={isColumnModalOpen}
@@ -213,16 +186,16 @@ export const FunilView: React.FC<FunilViewProps> = ({
         }}
       />
 
-      {showDeleteColumnModal && activeColumn && (
-        <ConfirmDeleteModal
-          isOpen={showDeleteColumnModal && !!activeColumn}
-          onClose={() => { setShowDeleteColumnModal(false); setActiveColumn(null); }}
-          onConfirm={handleConfirmDeleteColumn}
-          title="Excluir esta coluna?"
-          description={activeColumn.name}
-        />
-      )}
+      {/* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO DE COLUNA */}
+      <ConfirmDeleteModal
+        isOpen={showDeleteColumnModal && !!activeColumn}
+        onClose={() => { setShowDeleteColumnModal(false); setActiveColumn(null); }}
+        onConfirm={handleConfirmDeleteColumn}
+        title="Excluir esta coluna?"
+        description={activeColumn ? activeColumn.name : ''}
+      />
 
+      {/* MODAL DE GERENCIAMENTO DE TAGS */}
       <ManageTagsModal
         key={isTagsModalOpen ? 'tags-open' : 'tags-closed'}
         isOpen={isTagsModalOpen}
