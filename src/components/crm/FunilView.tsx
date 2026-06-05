@@ -13,7 +13,6 @@ interface FunilViewProps {
   buckets: Bucket[];
   tags: Tag[];
   isLoading?: boolean;
-  isRadarOpen: boolean;
   onMoveLead: (id: string, direction: 'forward' | 'backward') => void;
   onAddManualLead: (data: any) => void;
   onCreateColumn: (name: string) => void;
@@ -28,7 +27,6 @@ export const FunilView: React.FC<FunilViewProps> = ({
   buckets,
   tags,
   isLoading = false,
-  isRadarOpen,
   onMoveLead,
   onAddManualLead,
   onCreateColumn,

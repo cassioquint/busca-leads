@@ -7,6 +7,7 @@ import { useCRM } from '../hooks/useCRM';
 import { useAuth } from '../contexts/AuthContext';
 
 function App() {
+  // Controla se o Sidebar do Radar está expandido ou colapsado
   const [isRadarOpen, setIsRadarOpen] = useState(true);
 
   // Consome a inteligência do contexto de autenticação
@@ -45,11 +46,13 @@ function App() {
   // Renderiza a interface unificada do CRM
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans antialiased flex flex-col h-screen overflow-hidden">
+      {/* 🌟 REVISADO: O Header agora volta a ser limpo e focado, sem as propriedades antigas */}
       <Header />
 
+      {/* Container fluido ocupando 100% da viewport e dividindo os espaços verticalmente */}
       <main className="flex-1 w-full flex overflow-hidden relative">
         
-        {/* 1. SIDEBAR ESQUERDA: Radar de Prospecção */}
+        {/* 1. SIDEBAR ESQUERDA: Radar de Prospecção (Agora gerencia o próprio estado) */}
         <RadarView
           isOpen={isRadarOpen}
           setIsOpen={setIsRadarOpen}
@@ -61,6 +64,7 @@ function App() {
         />
 
         {/* 2. ÁREA PRINCIPAL/DIREITA: Quadro Kanban do Funil */}
+        {/* 🌟 REVISADO: Removida a propriedade não utilizada 'isRadarOpen' para eliminar o warning */}
         <FunilView
           leads={funilLeads}
           buckets={buckets}
@@ -73,7 +77,6 @@ function App() {
           onDeleteLead={handleDeleteLead}
           onUpdateLeadNotes={handleUpdateLeadNotes}
           isLoading={isLoadingCRM}
-          isRadarOpen={isRadarOpen}
         />
         
       </main>

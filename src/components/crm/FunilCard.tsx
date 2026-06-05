@@ -29,9 +29,6 @@ export const FunilCard: React.FC<FunilCardProps> = ({
   onDeleteLead,
   onCardClick
 }) => {
-  const todayStr = new Date().toLocaleDateString('pt-BR');
-  const isUrgent = lead.followUpDate === todayStr;
-
   const bucketIds = buckets.map(b => b.id);
   const currentColumnIndex = bucketIds.indexOf(colId);
   const isFirstColumn = currentColumnIndex === 0;
@@ -64,8 +61,7 @@ export const FunilCard: React.FC<FunilCardProps> = ({
   return (
     <div
       onClick={() => onCardClick(lead)}
-      className={`group/card bg-white rounded-xl border p-4 shadow-sm space-y-3 relative cursor-pointer hover:border-indigo-300 hover:shadow-md transition-all
-        ${isUrgent ? 'border-amber-400 ring-2 ring-amber-400/10' : 'border-slate-200/80'}`}
+      className="group/card bg-white rounded-xl p-4 shadow-sm space-y-3 relative cursor-pointer hover:border-indigo-300 hover:shadow-md transition-all"
     >
       {/* RÓTULO DINÂMICO ADICIONADO */}
       {lead.tag && (
@@ -74,13 +70,6 @@ export const FunilCard: React.FC<FunilCardProps> = ({
           style={{ backgroundColor: lead.tag.color }}
         >
           {lead.tag.name}
-        </div>
-      )}
-
-      {/* Alerta de Retomada */}
-      {isUrgent && (
-        <div className="flex items-center gap-1 bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-1 rounded-md w-fit mb-1 border border-amber-200">
-          <span>🔔 Retomar Contato Hoje!</span>
         </div>
       )}
 
@@ -97,8 +86,6 @@ export const FunilCard: React.FC<FunilCardProps> = ({
           <CardDropdown
             lead={lead}
             tags={tags}
-            todayStr={todayStr}
-            isUrgent={isUrgent}
             onChangeLeadTag={onChangeLeadTag}
             onDeleteLead={onDeleteLead}
           />
