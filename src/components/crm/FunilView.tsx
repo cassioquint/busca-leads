@@ -3,6 +3,7 @@ import type { Lead, Tag } from '@/types';
 import { Plus, UserPlus, Tag as TagIcon, Loader2 } from 'lucide-react';
 import { AddLeadModal, AddColumnModal, FunilColumn } from './';
 import { ConfirmDeleteModal } from '@/components/common/ConfirmDeleteModal';
+import { ManageTagsModal } from './ManageTagsModal';
 
 interface Bucket {
   id: string;
@@ -17,7 +18,9 @@ interface FunilViewProps {
   onMoveLead: (id: string, direction: 'forward' | 'backward') => void;
   onAddManualLead: (data: { title: string; phone: string; notes?: string }) => void;
   onCreateColumn: (name: string) => void;
-  onManageTags: () => void;
+  onCreateTag: (name: string, color: string) => Promise<void>;
+  onUpdateTag: (id: string, name: string, color: string) => Promise<void>;
+  onDeleteTag: (id: string) => Promise<void>;
   onChangeLeadTag: (leadId: string, tagId: string | null) => void;
   onDeleteLead: (id: string) => void;
   onUpdateLeadNotes: (id: string, notes: string, phone: string) => void;
@@ -34,7 +37,9 @@ export const FunilView: React.FC<FunilViewProps> = ({
   onMoveLead,
   onAddManualLead,
   onCreateColumn,
-  onManageTags,
+  onCreateTag,
+  onUpdateTag,
+  onDeleteTag,
   onChangeLeadTag,
   onDeleteLead,
   onUpdateLeadNotes,
@@ -46,10 +51,11 @@ export const FunilView: React.FC<FunilViewProps> = ({
   const [isColumnModalOpen, setIsColumnModalOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
 
-  // 🌟 NOVOS ESTADOS: Gerenciamento de Operações das Colunas
   const [activeColumn, setActiveColumn] = useState<Bucket | null>(null);
   const [isEditColumnMode, setIsEditColumnMode] = useState(false);
   const [showDeleteColumnModal, setShowDeleteColumnModal] = useState(false);
+
+  const [isTagsModalOpen, setIsTagsModalOpen] = useState(false);
 
   const savedLeads = leads.filter(l => l.isSaved);
 
@@ -104,7 +110,7 @@ export const FunilView: React.FC<FunilViewProps> = ({
         </div>
         <div className="flex items-center gap-3">
           <button
-            onClick={onManageTags}
+            onClick={() => setIsTagsModalOpen(true)}
             disabled={isLoading}
             className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors cursor-pointer disabled:opacity-50"
           >
@@ -216,6 +222,16 @@ export const FunilView: React.FC<FunilViewProps> = ({
           description={activeColumn.name}
         />
       )}
+
+      <ManageTagsModal
+        key={isTagsModalOpen ? 'tags-open' : 'tags-closed'}
+        isOpen={isTagsModalOpen}
+        onClose={() => setIsTagsModalOpen(false)}
+        tags={tags}
+        onCreateTag={onCreateTag}
+        onUpdateTag={onUpdateTag}
+        onDeleteTag={onDeleteTag}
+      />
     </div>
   );
 };

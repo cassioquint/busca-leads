@@ -92,17 +92,36 @@ export const useCRMConfig = ({ userEmail, buckets, setBuckets, setTags }: UseCRM
     }
   };
 
-  const handleManageTags = () => {
+  const handleCreateTag = async (name: string, color: string) => {
     if (!userEmail) return;
-    const name = prompt("Deseja criar um novo rótulo customizado? Digite o nome:");
-    if (!name || !name.trim()) return;
+    try {
+      const newTag = await api.createTag(name, userEmail, color);
+      setTags(prev => [...prev, newTag]);
+    } catch (error) {
+      console.error("Erro ao criar tag:", error);
+      alert("Não foi possível criar o rótulo.");
+    }
+  };
 
-    const colors = ['#EF4444', '#3B82F6', '#F59E0B', '#10B981', '#8B5CF6', '#EC4899'];
-    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+  const handleUpdateTag = async (id: string, name: string, color: string) => {
+    try {
+      await api.updateTag(id, name, color);
+      setTags(prev => prev.map(t => t.id === id ? { ...t, name, color } : t));
+    } catch (error) {
+      console.error("Erro ao atualizar tag:", error);
+      alert("Não foi possível atualizar o rótulo.");
+    }
+  };
 
-    api.createTag(name.trim(), userEmail, randomColor)
-      .then(newTag => setTags(prev => [...prev, newTag]))
-      .catch(err => console.error("Erro ao gerenciar tags:", err));
+  const handleDeleteTag = async (id: string) => {
+    if (!userEmail) return;
+    try {
+      await api.deleteTag(id, userEmail);
+      setTags(prev => prev.filter(t => t.id !== id));
+    } catch (error) {
+      console.error("Erro ao deletar tag:", error);
+      alert("Não foi possível excluir o rótulo.");
+    }
   };
 
   return {
@@ -110,6 +129,8 @@ export const useCRMConfig = ({ userEmail, buckets, setBuckets, setTags }: UseCRM
     handleRenameColumn,
     handleDeleteColumn,
     handleMoveColumn,
-    handleManageTags
+    handleCreateTag,
+    handleUpdateTag,
+    handleDeleteTag
   };
 };

@@ -53,6 +53,8 @@ export const useCRM = () => {
     handleRenameColumn: configActions.handleRenameColumn,
     handleDeleteColumn: configActions.handleDeleteColumn,
     handleMoveColumn: configActions.handleMoveColumn,
-    handleManageTags: configActions.handleManageTags
+    handleCreateTag: configActions.handleCreateTag,
+    handleUpdateTag: configActions.handleUpdateTag,
+    handleDeleteTag: configActions.handleDeleteTag
   };
 };

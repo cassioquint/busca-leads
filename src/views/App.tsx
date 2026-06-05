@@ -30,7 +30,9 @@ function App() {
     handleRenameColumn,
     handleDeleteColumn,
     handleMoveColumn,
-    handleManageTags,
+    handleCreateTag,
+    handleUpdateTag,
+    handleDeleteTag,
     handleChangeLeadTag,
     handleDeleteLead,
     handleUpdateLeadNotes,
@@ -77,7 +79,9 @@ function App() {
           onRenameColumn={handleRenameColumn}
           onDeleteColumn={handleDeleteColumn}
           onMoveColumn={handleMoveColumn}
-          onManageTags={handleManageTags}
+          onCreateTag={handleCreateTag}
+          onUpdateTag={handleUpdateTag}
+          onDeleteTag={handleDeleteTag}
           onChangeLeadTag={handleChangeLeadTag}
           onDeleteLead={handleDeleteLead}
           onUpdateLeadNotes={handleUpdateLeadNotes}
