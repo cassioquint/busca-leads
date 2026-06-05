@@ -6,10 +6,10 @@ import { useCRMConfig } from './useCRMConfig';
 export const useCRM = () => {
   const { user } = useAuth();
   
-  // 1. Carrega os estados reativos globais
+  // 1. Carrega os estados reativos globais (leads, buckets, tags, loadings)
   const data = useCRMData();
 
-  // 2. Acopla as ações especialistas de Leads
+  // 2. Acopla as ações especialistas de Leads (salvar, mover, notas, deleção)
   const leadsActions = useCRMLeads({
     userEmail: user?.email,
     radarLeads: data.radarLeads,
@@ -20,7 +20,7 @@ export const useCRM = () => {
     tags: data.tags
   });
 
-  // 3. Acopla as ações de Infraestrutura do Kanban
+  // 3. Acopla as ações de Infraestrutura do Kanban (criar, renomear, excluir colunas e gerenciar tags)
   const configActions = useCRMConfig({
     userEmail: user?.email,
     buckets: data.buckets,
@@ -28,8 +28,9 @@ export const useCRM = () => {
     setTags: data.setTags
   });
 
-  // 4. Retorna tudo unificado sem quebrar nenhum componente externo
+  // 4. Retorna tudo unificado de forma explícita e mapeada pelo compilador
   return {
+    // Estados Globais
     isLoadingCRM: data.isLoadingCRM,
     radarLeads: data.radarLeads,
     setRadarLeads: data.setRadarLeads,
@@ -38,7 +39,20 @@ export const useCRM = () => {
     funilLeads: data.funilLeads,
     buckets: data.buckets,
     tags: data.tags,
-    ...leadsActions,
-    ...configActions
+    
+    // Ações de Leads (Açúcar sintático expandido do leadsActions)
+    handleSaveLead: leadsActions.handleSaveLead,
+    handleMoveLead: leadsActions.handleMoveLead,
+    handleAddManualLead: leadsActions.handleAddManualLead,
+    handleDeleteLead: leadsActions.handleDeleteLead,
+    handleUpdateLeadNotes: leadsActions.handleUpdateLeadNotes,
+    handleChangeLeadTag: leadsActions.handleChangeLeadTag,
+
+    // Ações de Configuração Estrutural
+    handleCreateColumn: configActions.handleCreateColumn,
+    handleRenameColumn: configActions.handleRenameColumn,
+    handleDeleteColumn: configActions.handleDeleteColumn,
+    handleMoveColumn: configActions.handleMoveColumn,
+    handleManageTags: configActions.handleManageTags
   };
 };

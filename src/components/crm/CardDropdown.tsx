@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Clock, Trash2, Calendar, Tag, Plus } from 'lucide-react';
+import { ConfirmDeleteModal } from '@/components/common/ConfirmDeleteModal';
 import type { Lead, Tag as TagType } from '@/types';
 
 interface CardDropdownProps {
@@ -19,10 +20,10 @@ export const CardDropdown: React.FC<CardDropdownProps> = ({
 }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  
+
   // Guardará as coordenadas (X e Y) exatas de onde o menu deve brotar na tela
   const [menuCoords, setMenuCoords] = useState({ top: 0, left: 0 });
-  
+
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -31,7 +32,7 @@ export const CardDropdown: React.FC<CardDropdownProps> = ({
     e.stopPropagation();
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
-      
+
       // Abre o menu colado abaixo do botão, alinhado à direita dele (com margem de segurança)
       setMenuCoords({
         top: rect.bottom + window.scrollY + 6,
@@ -100,10 +101,10 @@ export const CardDropdown: React.FC<CardDropdownProps> = ({
       {showMenu && (
         <div
           ref={menuRef}
-          style={{ 
-            position: 'fixed', 
-            top: `${menuCoords.top}px`, 
-            left: `${menuCoords.left}px` 
+          style={{
+            position: 'fixed',
+            top: `${menuCoords.top}px`,
+            left: `${menuCoords.left}px`
           }}
           className="z-[9999] w-50 bg-white border border-slate-200/80 rounded-xl shadow-2xl p-1.5 animate-in fade-in zoom-in-95 duration-100 text-left space-y-0.5"
           onClick={(e) => e.stopPropagation()}
@@ -148,7 +149,7 @@ export const CardDropdown: React.FC<CardDropdownProps> = ({
             </div>
             <div className="relative w-full">
               <Calendar className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
-              <input 
+              <input
                 type="date"
                 value={getInputValue(lead.followUpDate)}
                 onChange={(e) => handleDateChange(e.target.value)}
@@ -173,20 +174,13 @@ export const CardDropdown: React.FC<CardDropdownProps> = ({
 
       {/* MODAL DE DELEÇÃO */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowDeleteModal(false)} />
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-sm w-full p-6 relative z-10 animate-in zoom-in-95 duration-200 flex flex-col items-center text-center space-y-4">
-            <div className="p-3 bg-red-50 text-red-600 rounded-full"><Trash2 className="w-6 h-6" /></div>
-            <div className="space-y-1">
-              <h4 className="text-base font-bold text-slate-900">Excluir este Lead?</h4>
-              <p className="text-xs text-slate-500 leading-relaxed">Tem certeza que deseja remover <strong>"{lead.title}"</strong>?</p>
-            </div>
-            <div className="flex items-center gap-3 w-full pt-2">
-              <button type="button" onClick={() => setShowDeleteModal(false)} className="flex-1 px-4 py-2 bg-slate-50 border border-slate-200 text-slate-600 text-xs font-semibold rounded-xl cursor-pointer">Cancelar</button>
-              <button type="button" onClick={handleConfirmDelete} className="flex-1 px-4 py-2 bg-red-600 text-white text-xs font-bold rounded-xl shadow-md shadow-red-100 cursor-pointer">Sim, Excluir</button>
-            </div>
-          </div>
-        </div>
+        <ConfirmDeleteModal
+          isOpen={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={handleConfirmDelete}
+          title="Excluir este Lead?"
+          description={lead.title}
+        />
       )}
     </div>
   );

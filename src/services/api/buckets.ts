@@ -1,5 +1,11 @@
 import { BASE_URL, getAuthHeaders } from './client';
 
+// Interface para permitir atualizações parciais no PUT de forma tipada
+interface UpdateBucketData {
+  name?: string;
+  order?: number;
+}
+
 export const bucketApi = {
   async getBuckets(user: string) {
     const headers = await getAuthHeaders();
@@ -19,18 +25,18 @@ export const bucketApi = {
     return response.json();
   },
 
-  async updateBucket(id: string, name: string, order?: number) {
+  async updateBucket(id: string, data: UpdateBucketData) {
     const headers = await getAuthHeaders();
     const response = await fetch(`${BASE_URL}/buckets`, {
       method: 'PUT',
       headers,
-      body: JSON.stringify({ id, name, order })
+      body: JSON.stringify({ id, ...data })
     });
     if (!response.ok) throw new Error('Falha ao atualizar coluna');
     return response.json();
   },
 
-  async deleteBucket(id: string, user: string) {
+  async deleteBucket(id: string, user?: string) {
     const headers = await getAuthHeaders();
     const response = await fetch(`${BASE_URL}/buckets`, {
       method: 'DELETE',

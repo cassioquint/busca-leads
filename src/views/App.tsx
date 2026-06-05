@@ -27,10 +27,13 @@ function App() {
     buckets,
     tags,
     handleCreateColumn,
+    handleRenameColumn,
+    handleDeleteColumn,
+    handleMoveColumn,
     handleManageTags,
     handleChangeLeadTag,
     handleDeleteLead,
-    handleUpdateLeadNotes
+    handleUpdateLeadNotes,
   } = useCRM();
 
   // Se o Firebase ainda estiver pensando, mostra a tela de carregamento
@@ -46,7 +49,7 @@ function App() {
   // Renderiza a interface unificada do CRM
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans antialiased flex flex-col h-screen overflow-hidden">
-      {/* 🌟 REVISADO: O Header agora volta a ser limpo e focado, sem as propriedades antigas */}
+      {/* O Header agora é limpo e focado, sem as propriedades antigas */}
       <Header />
 
       {/* Container fluido ocupando 100% da viewport e dividindo os espaços verticalmente */}
@@ -64,7 +67,6 @@ function App() {
         />
 
         {/* 2. ÁREA PRINCIPAL/DIREITA: Quadro Kanban do Funil */}
-        {/* 🌟 REVISADO: Removida a propriedade não utilizada 'isRadarOpen' para eliminar o warning */}
         <FunilView
           leads={funilLeads}
           buckets={buckets}
@@ -72,6 +74,9 @@ function App() {
           onMoveLead={handleMoveLead}
           onAddManualLead={handleAddManualLead}
           onCreateColumn={handleCreateColumn}
+          onRenameColumn={handleRenameColumn}
+          onDeleteColumn={handleDeleteColumn}
+          onMoveColumn={handleMoveColumn}
           onManageTags={handleManageTags}
           onChangeLeadTag={handleChangeLeadTag}
           onDeleteLead={handleDeleteLead}
