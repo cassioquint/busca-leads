@@ -84,6 +84,7 @@ export const useCRMLeads = ({
       phone: leadData.phone || 'Sem Telefone',
       address: leadData.address || 'Sem endereço',
       city: 'Cadastro Manual',
+      notes: leadData.notes || '',
       rating: null,
       reviews: null,
       openState: 'Salvando...',
