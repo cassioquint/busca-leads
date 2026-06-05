@@ -10,10 +10,8 @@ interface UseCRMConfigProps {
 
 export const useCRMConfig = ({ userEmail, buckets, setBuckets, setTags }: UseCRMConfigProps) => {
   
-  const handleCreateColumn = async () => {
-    if (!userEmail) return;
-    const name = prompt("Digite o nome da nova coluna para o seu Kanban:");
-    if (!name || !name.trim()) return;
+  const handleCreateColumn = async (name: string) => {
+    if (!userEmail || !name.trim()) return;
 
     try {
       const order = buckets.length + 1;
@@ -33,7 +31,6 @@ export const useCRMConfig = ({ userEmail, buckets, setBuckets, setTags }: UseCRM
     const colors = ['#EF4444', '#3B82F6', '#F59E0B', '#10B981', '#8B5CF6', '#EC4899'];
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
-    // 🌟 FIX: Injetando na ordem correta exigida pela api.ts: name, user, color
     api.createTag(name.trim(), userEmail, randomColor)
       .then(newTag => setTags(prev => [...prev, newTag]))
       .catch(err => console.error("Erro ao gerenciar tags:", err));

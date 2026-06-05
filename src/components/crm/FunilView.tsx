@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { Lead, Tag } from '@/types';
 import { Plus, UserPlus, Tag as TagIcon, Loader2 } from 'lucide-react';
-import { FunilCard, AddLeadModal } from './';
+import { FunilCard, AddLeadModal, AddColumnModal } from './';
 
 interface Bucket {
   id: string;
@@ -15,7 +15,7 @@ interface FunilViewProps {
   isLoading?: boolean;
   onMoveLead: (id: string, direction: 'forward' | 'backward') => void;
   onAddManualLead: (data: any) => void;
-  onCreateColumn: () => void;
+  onCreateColumn: (name: string) => void;
   onManageTags: () => void;
   onChangeLeadTag: (leadId: string, tagId: string | null) => void;
   onDeleteLead: (id: string) => void;
@@ -37,7 +37,9 @@ export const FunilView: React.FC<FunilViewProps> = ({
 }) => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isColumnModalOpen, setIsColumnModalOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
+
   const savedLeads = leads.filter(l => l.isSaved);
 
   return (
@@ -75,7 +77,7 @@ export const FunilView: React.FC<FunilViewProps> = ({
           </button>
 
           <button
-            onClick={onCreateColumn}
+            onClick={() => setIsColumnModalOpen(true)}
             disabled={isLoading}
             className="flex items-center gap-2 px-4 py-2 border border-dashed border-slate-300 text-slate-600 rounded-xl text-sm font-semibold hover:bg-slate-100 transition-colors cursor-pointer disabled:opacity-50"
           >
@@ -167,6 +169,12 @@ export const FunilView: React.FC<FunilViewProps> = ({
           setIsModalOpen(false);
           setEditingLead(null);
         }}
+      />
+
+      <AddColumnModal
+        isOpen={isColumnModalOpen}
+        onClose={() => setIsColumnModalOpen(false)}
+        onSubmit={(name) => onCreateColumn(name)}
       />
     </div>
   );
