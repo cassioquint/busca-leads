@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react'; // 🌟 Adicionado o useEffect para otimização de cold start
 import { Header } from '../components/layout/Header';
 import { RadarView } from '../components/radar/RadarView';
 import { FunilView } from '../components/crm/FunilView';
@@ -36,7 +36,15 @@ function App() {
     handleChangeLeadTag,
     handleDeleteLead,
     handleUpdateLeadNotes,
+    handleImportLeadsInBulk,
   } = useCRM();
+
+  // 🌟 Estratégia de Pre-fetching: Manda um "cutucão" silencioso na Render assim que o App monta.
+  // Isso inicia o "spin up" do contêiner antes mesmo de carregar os dados pesados do funil.
+  useEffect(() => {
+    // Altere para a URL correta do seu ambiente (ex: no seu client de API)
+    fetch('http://localhost:3001/api/status').catch(() => {});
+  }, []);
 
   // Se o Firebase ainda estiver pensando, mostra a tela de carregamento
   if (loading) {
@@ -85,6 +93,7 @@ function App() {
           onChangeLeadTag={handleChangeLeadTag}
           onDeleteLead={handleDeleteLead}
           onUpdateLeadNotes={handleUpdateLeadNotes}
+          onImportLeadsInBulk={handleImportLeadsInBulk}
           isLoading={isLoadingCRM}
         />
         

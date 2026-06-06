@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { api } from '@/services/api';
 import type { Lead, Bucket, Tag } from '@/types';
 
@@ -21,12 +21,14 @@ export const useCRMLeads = ({
   buckets,
   tags
 }: UseCRMLeadsProps) => {
+  const bucketsRef = useRef<Bucket[]>(buckets);
 
-  const bucketsRef = useRef(buckets);
-  bucketsRef.current = buckets;
+  // 🌟 FIX: Sincronização do ref movida com segurança para fora do fluxo de renderização
+  useEffect(() => {
+    bucketsRef.current = buckets;
+  }, [buckets]);
 
   const handleSaveLead = async (id: string) => {
-
     const currentBuckets = bucketsRef.current;
     if (!userEmail || currentBuckets.length === 0) return;
     const firstBucketId = currentBuckets[0].id;
@@ -72,7 +74,8 @@ export const useCRMLeads = ({
     }
   };
 
-  const handleAddManualLead = async (leadData: any) => {
+  // 🌟 FIX: Tipagem do payload corrigida de Partial<Lead>[] (array incorreto) para objeto de criação omitindo chaves do banco
+  const handleAddManualLead = async (leadData: Omit<Lead, 'id' | 'userEmail' | 'isSaved' | 'bucketId'>) => {
     if (!userEmail || buckets.length === 0) return;
     const tempId = `manual-${Date.now()}`;
     const firstBucketId = buckets[0].id;
@@ -122,16 +125,13 @@ export const useCRMLeads = ({
     }
   };
 
-  // Suporta a mutação otimista de notas e telefones simultaneamente
   const handleUpdateLeadNotes = async (id: string, notes?: string, phone?: string) => {
     if (!userEmail) return;
     const previousLeads = [...funilLeads];
 
-    // 🌟 FIX: Mudado de "phone || l.phone" para "phone ?? l.phone" para aceitar strings vazias caso limpo
     setFunilLeads(prev => prev.map(l => l.id === id ? { ...l, notes, phone: phone ?? l.phone } : l));
 
     try {
-      // Repassa o payload envelopado contendo as chaves atualizadas para a API
       await api.updateLeadNotes(id, { notes, phone }, userEmail);
     } catch (error) {
       console.error(error);
@@ -162,12 +162,27 @@ export const useCRMLeads = ({
     }
   };
 
+  // 🌟 FIX: Tipagem de any[] corrigida para Partial<Lead>[] em total conformidade com os utilitários de planilha
+  const handleImportLeadsInBulk = async (newLeads: Partial<Lead>[]) => {
+    if (!userEmail) return;
+    
+    try {
+      const savedLeadsFromServer = await api.importLeadsBulk(newLeads, userEmail);
+      setFunilLeads(prev => [...prev, ...savedLeadsFromServer]);
+      alert(`${savedLeadsFromServer.length} leads importados com sucesso!`);
+    } catch (error) {
+      console.error(error);
+      alert('Erro ao salvar os leads importados no servidor.');
+    }
+  };
+
   return {
     handleSaveLead,
     handleMoveLead,
     handleAddManualLead,
     handleChangeLeadTag,
     handleUpdateLeadNotes,
-    handleDeleteLead
+    handleDeleteLead,
+    handleImportLeadsInBulk
   };
 };

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { Lead, Tag } from '@/types';
-import { Loader2, UserPlus } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { AddLeadModal, AddColumnModal, FunilColumn, FunilHeader } from './';
 import { ConfirmDeleteModal } from '@/components/common/ConfirmDeleteModal';
 import { ManageTagsModal } from './ManageTagsModal';
@@ -27,6 +27,7 @@ interface FunilViewProps {
   onRenameColumn: (id: string, newName: string) => void;
   onDeleteColumn: (id: string) => void;
   onMoveColumn: (id: string, direction: 'left' | 'right') => void;
+  onImportLeadsInBulk: (leads: Partial<Lead>[]) => Promise<void>;
 }
 
 export const FunilView: React.FC<FunilViewProps> = ({
@@ -45,7 +46,8 @@ export const FunilView: React.FC<FunilViewProps> = ({
   onUpdateLeadNotes,
   onRenameColumn,
   onDeleteColumn,
-  onMoveColumn
+  onMoveColumn,
+  onImportLeadsInBulk
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isColumnModalOpen, setIsColumnModalOpen] = useState(false);
@@ -109,6 +111,7 @@ export const FunilView: React.FC<FunilViewProps> = ({
         onNewLeadClick={() => { setEditingLead(null); setIsModalOpen(true); }}
         onManageTagsClick={() => setIsTagsModalOpen(true)}
         onNewColumnClick={handleOpenCreateColumn}
+        onImportLeadsInBulk={onImportLeadsInBulk}
       />
 
       {/* CORE DE TELAS */}
@@ -119,7 +122,11 @@ export const FunilView: React.FC<FunilViewProps> = ({
         </div>
       ) : savedLeads.length === 0 ? (
         <div className="flex-1 bg-white rounded-2xl border-2 border-dashed border-slate-200/80 p-16 text-center shadow-sm flex flex-col items-center justify-center space-y-4 overflow-y-auto">
-          <div className="p-3 bg-slate-50 text-slate-400 rounded-full"><UserPlus className="w-6 h-6" /></div>
+          <div className="p-3 bg-slate-50 text-slate-400 rounded-full">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+          </div>
           <h3 className="text-lg font-bold text-slate-800">Seu funil está limpo</h3>
           <p className="text-sm text-slate-500 max-w-md">Use o "Radar de Prospecção" ao lado para capturar empresas.</p>
           <button type="button" onClick={() => { setEditingLead(null); setIsModalOpen(true); }} className="mt-4 text-indigo-600 font-bold text-sm hover:underline">

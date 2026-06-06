@@ -1,4 +1,5 @@
 import { BASE_URL, getAuthHeaders } from './client';
+import type { Lead } from '@/types';
 
 export const leadApi = {
   // Busca os leads salvos no Funil do usuário
@@ -23,7 +24,7 @@ export const leadApi = {
   },
 
   // Salva lead manual
-  async saveManualLeadToFunil(leadData: any, user: string) {
+  async saveManualLeadToFunil(leadData: Omit<Lead, 'id' | 'userEmail' | 'isSaved' | 'bucketId'>, user: string) {
     const headers = await getAuthHeaders();
     const response = await fetch(`${BASE_URL}/funil/manual`, {
       method: 'POST',
@@ -35,7 +36,20 @@ export const leadApi = {
     return response.json();
   },
 
-  // Atualiza a coluna (bucket) de um lead específico
+  // Importação de Leads em Lote (Bulk Insert) via Planilha
+  async importLeadsBulk(leads: Partial<Lead>[], user: string) {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${BASE_URL}/funil/bulk`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ leads, user })
+    });
+
+    if (!response.ok) throw new Error('Falha ao realizar a importação em lote no servidor');
+    return response.json();
+  },
+
+  // Aktualiza a coluna (bucket) de um lead específico
   async updateLeadBucket(leadId: string, bucketId: string, user: string) {
     const headers = await getAuthHeaders();
     const response = await fetch(`${BASE_URL}/funil/move`, {
@@ -63,24 +77,24 @@ export const leadApi = {
 
   // Editar as observações/notas do Lead
   async updateLeadNotes(id: string, payload: { notes?: string; phone?: string }, user: string) {
-  const headers = await getAuthHeaders();
-  
-  const response = await fetch(`${BASE_URL}/funil/${id}`, {
-    method: 'PUT',
-    headers,
-    body: JSON.stringify({ 
-      notes: payload.notes,
-      phone: payload.phone,
-      user 
-    })
-  });
+    const headers = await getAuthHeaders();
+    
+    const response = await fetch(`${BASE_URL}/funil/${id}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ 
+        notes: payload.notes,
+        phone: payload.phone,
+        user 
+      })
+    });
 
-  if (!response.ok) {
-    throw new Error('Falha ao atualizar as informações do lead');
-  }
-  
-  return response.json();
-},
+    if (!response.ok) {
+      throw new Error('Falha ao atualizar as informações do lead');
+    }
+    
+    return response.json();
+  },
 
   // Excluir um Lead definitivamente do funil
   async deleteLead(id: string, user: string) {

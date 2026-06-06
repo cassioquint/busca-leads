@@ -9,6 +9,7 @@ export const api = {
   getFunilLeads: leadApi.getFunilLeads,
   saveLeadToFunil: leadApi.captureProspect,
   saveManualLeadToFunil: leadApi.saveManualLeadToFunil,
+  importLeadsBulk: leadApi.importLeadsBulk,
   updateLeadBucket: leadApi.updateLeadBucket,
   updateLeadTag: leadApi.updateLeadTag,
   updateLeadNotes: leadApi.updateLeadNotes,
