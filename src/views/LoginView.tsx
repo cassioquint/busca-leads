@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
-import { Mail, Lock, Target, User } from 'lucide-react'; // Adicionei o ícone User
+import { Mail, Lock, Target, User } from 'lucide-react';
 import { 
   signInWithPopup, 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
-  updateProfile // Importe esta função para salvar o nome
+  updateProfile 
 } from 'firebase/auth';
 import { auth, googleProvider } from '../services/firebase';
 
 export const LoginView: React.FC = () => {
-  const [name, setName] = useState(''); // Estado para o nome
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -21,7 +22,7 @@ export const LoginView: React.FC = () => {
     try {
       await signInWithPopup(auth, googleProvider);
       console.log("Usuário logado com sucesso (Google)!");
-    } catch (err: any) {
+    } catch (err) {
       console.error("Erro no Google:", err);
       setError('Falha ao autenticar com o Google.');
     }
@@ -31,7 +32,6 @@ export const LoginView: React.FC = () => {
     e.preventDefault();
     setError('');
     
-    // Validação básica
     if (isRegistering && !name) {
       setError('Por favor, informe seu nome.');
       return;
@@ -40,29 +40,28 @@ export const LoginView: React.FC = () => {
       setError('Preencha todos os campos.');
       return;
     }
+    if (isRegistering && password !== confirmPassword) {
+      setError('As senhas informadas não são iguais.');
+      return;
+    }
 
     setIsLoading(true);
     
     try {
       if (isRegistering) {
-        // 1. Cria o usuário
         const result = await createUserWithEmailAndPassword(auth, email, password);
-        
-        // 2. Atualiza o perfil com o nome informado
-        await updateProfile(result.user, {
-          displayName: name
-        });
-        
+        await updateProfile(result.user, { displayName: name });
         console.log("Conta criada para:", name);
       } else {
-        // Fluxo de entrar
         await signInWithEmailAndPassword(auth, email, password);
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error("Erro na autenticação:", err);
-      if (err.code === 'auth/email-already-in-use') setError('Este e-mail já está em uso.');
-      else if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') setError('E-mail ou senha incorretos.');
-      else if (err.code === 'auth/weak-password') setError('A senha deve ter pelo menos 6 caracteres.');
+      const errorCode = err && typeof err === 'object' && 'code' in err ? err.code : '';
+      
+      if (errorCode === 'auth/email-already-in-use') setError('Este e-mail já está em uso.');
+      else if (errorCode === 'auth/wrong-password' || errorCode === 'auth/user-not-found' || errorCode === 'auth/invalid-credential') setError('E-mail ou senha incorretos.');
+      else if (errorCode === 'auth/weak-password') setError('A senha deve ter pelo menos 6 caracteres.');
       else setError('Ocorreu um erro ao autenticar.');
     } finally {
       setIsLoading(false);
@@ -95,7 +94,7 @@ export const LoginView: React.FC = () => {
         </div>
 
         {error && (
-          <div className="mb-6 bg-red-50 text-red-600 text-sm font-medium px-4 py-3 rounded-xl border border-red-100 text-center">
+          <div className="mb-6 bg-red-50 text-red-600 text-sm font-medium px-4 py-3 rounded-xl border border-red-100 text-center animate-in fade-in zoom-in-95 duration-200">
             {error}
           </div>
         )}
@@ -168,6 +167,23 @@ export const LoginView: React.FC = () => {
             </div>
           </div>
 
+          {/* 🌟 NOVO: INPUT DE CONFIRMAÇÃO DE SENHA - Exibido apenas no cadastro */}
+          {isRegistering && (
+            <div className="space-y-1.5 animate-in fade-in slide-in-from-top-2 duration-300">
+              <label className="text-xs font-bold text-slate-700 ml-1">Confirme a senha</label>
+              <div className="relative">
+                <Lock className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+                <input 
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-white border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+                />
+              </div>
+            </div>
+          )}
+
           <button 
             type="submit"
             disabled={isLoading}
@@ -190,6 +206,8 @@ export const LoginView: React.FC = () => {
               onClick={() => {
                 setIsRegistering(!isRegistering);
                 setError('');
+                setPassword('');
+                setConfirmPassword(''); // Limpa os campos ao alternar
               }} 
               className="text-indigo-600 hover:text-indigo-700 font-bold transition-colors"
             >

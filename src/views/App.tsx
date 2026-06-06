@@ -1,12 +1,17 @@
-import { useState, useEffect } from 'react'; // 🌟 Adicionado o useEffect para otimização de cold start
-import { Header } from '../components/layout/Header';
-import { RadarView } from '../components/radar/RadarView';
-import { FunilView } from '../components/crm/FunilView';
+import { useState, useEffect } from 'react';
+import { Header } from '@/components/layout/Header';
+import { RadarView } from '@/components/radar/RadarView';
+import { FunilView } from '@/components/crm/FunilView';
+import { ProfileView } from '@/views/ProfileView';
 import { LoginView } from './LoginView';
+import { PricingView } from './PricingView';
 import { useCRM } from '../hooks/useCRM';
 import { useAuth } from '../contexts/AuthContext';
 
 function App() {
+  // Controla o estado de visualização de telas do app
+  const [view, setView] = useState<'crm' | 'profile' | 'pricing'>('crm');
+
   // Controla se o Sidebar do Radar está expandido ou colapsado
   const [isRadarOpen, setIsRadarOpen] = useState(true);
 
@@ -39,11 +44,9 @@ function App() {
     handleImportLeadsInBulk,
   } = useCRM();
 
-  // 🌟 Estratégia de Pre-fetching: Manda um "cutucão" silencioso na Render assim que o App monta.
-  // Isso inicia o "spin up" do contêiner antes mesmo de carregar os dados pesados do funil.
+  // Estratégia de Pre-fetching: Manda um "cutucão" silencioso na Render assim que o App monta.
   useEffect(() => {
-    // Altere para a URL correta do seu ambiente (ex: no seu client de API)
-    fetch('http://localhost:3001/api/status').catch(() => {});
+    fetch('http://localhost:3001/api/status').catch(() => { });
   }, []);
 
   // Se o Firebase ainda estiver pensando, mostra a tela de carregamento
@@ -59,44 +62,71 @@ function App() {
   // Renderiza a interface unificada do CRM
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans antialiased flex flex-col h-screen overflow-hidden">
-      {/* O Header agora é limpo e focado, sem as propriedades antigas */}
-      <Header />
+      {/* Cabeçalho centralizado com os mapeamentos corretos das views */}
+      <Header
+        onProfileClick={() => setView(view === 'profile' ? 'crm' : 'profile')}
+        onLogoClick={() => setView('crm')}
+        onPricingClick={() => setView('pricing')}
+      />
 
-      {/* Container fluido ocupando 100% da viewport e dividindo os espaços verticalmente */}
+      {/* Container fluido que alterna dinamicamente o conteúdo principal */}
       <main className="flex-1 w-full flex overflow-hidden relative">
-        
-        {/* 1. SIDEBAR ESQUERDA: Radar de Prospecção (Agora gerencia o próprio estado) */}
-        <RadarView
-          isOpen={isRadarOpen}
-          setIsOpen={setIsRadarOpen}
-          leads={radarLeads}
-          setLeads={setRadarLeads}
-          hasSearched={hasSearched}
-          setHasSearched={setHasSearched}
-          onSaveLead={handleSaveLead}
-        />
 
-        {/* 2. ÁREA PRINCIPAL/DIREITA: Quadro Kanban do Funil */}
-        <FunilView
-          leads={funilLeads}
-          buckets={buckets}
-          tags={tags}
-          onMoveLead={handleMoveLead}
-          onAddManualLead={handleAddManualLead}
-          onCreateColumn={handleCreateColumn}
-          onRenameColumn={handleRenameColumn}
-          onDeleteColumn={handleDeleteColumn}
-          onMoveColumn={handleMoveColumn}
-          onCreateTag={handleCreateTag}
-          onUpdateTag={handleUpdateTag}
-          onDeleteTag={handleDeleteTag}
-          onChangeLeadTag={handleChangeLeadTag}
-          onDeleteLead={handleDeleteLead}
-          onUpdateLeadNotes={handleUpdateLeadNotes}
-          onImportLeadsInBulk={handleImportLeadsInBulk}
-          isLoading={isLoadingCRM}
-        />
-        
+        {/* 🌟 AJUSTADO: Estrutura lógica chaveada para renderizar 'profile', 'pricing' ou o 'crm' padrão */}
+        {view === 'profile' && (
+          <ProfileView onNavigateBack={() => setView('crm')} />
+        )}
+
+        {view === 'pricing' && (
+          <PricingView />
+        )}
+
+        {view === 'crm' && (
+          <>
+            {/* 1. SIDEBAR ESQUERDA: Radar de Prospecção */}
+            <RadarView
+              isOpen={isRadarOpen}
+              setIsOpen={setIsRadarOpen}
+              leads={radarLeads}
+              setLeads={setRadarLeads}
+              hasSearched={hasSearched}
+              setHasSearched={setHasSearched}
+              onSaveLead={handleSaveLead}
+            />
+
+            {/* 2. ÁREA PRINCIPAL/DIREITA: Quadro Kanban do Funil */}
+            <FunilView
+              leads={funilLeads}
+              buckets={buckets}
+              tags={tags}
+              onMoveLead={handleMoveLead}
+              onAddManualLead={(data) => handleAddManualLead({
+                title: data.title,
+                phone: data.phone,
+                notes: data.notes || '',
+                type: 'Não informado',
+                address: 'Sem endereço',
+                city: 'Cadastro Manual',
+                openState: 'Adicionado Manualmente',
+                isOpen: true,
+                thumbnail: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=300&h=300&fit=crop'
+              })}
+              onCreateColumn={handleCreateColumn}
+              onRenameColumn={handleRenameColumn}
+              onDeleteColumn={handleDeleteColumn}
+              onMoveColumn={handleMoveColumn}
+              onCreateTag={handleCreateTag}
+              onUpdateTag={handleUpdateTag}
+              onDeleteTag={handleDeleteTag}
+              onChangeLeadTag={handleChangeLeadTag}
+              onDeleteLead={handleDeleteLead}
+              onUpdateLeadNotes={handleUpdateLeadNotes}
+              onImportLeadsInBulk={handleImportLeadsInBulk}
+              isLoading={isLoadingCRM}
+            />
+          </>
+        )}
+
       </main>
     </div>
   );
