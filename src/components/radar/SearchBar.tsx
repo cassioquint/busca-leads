@@ -45,13 +45,16 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           className={`flex items-center justify-center gap-1.5 py-2 px-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
             activeSubTab === 'inauguracoes'
               ? 'bg-white text-amber-700 shadow-sm border border-slate-200/50'
-              : 'text-slate-500 hover:text-slate-800'
+              : 'text-slate-400 hover:text-slate-600 opacity-75'
           }`}
+          title="Funcionalidade em desenvolvimento"
         >
           <Building2 className="w-3.5 h-3.5" />
           <span>Inaugurações</span>
-          <span className="flex h-3.5 w-6 items-center justify-center rounded bg-amber-500 text-[8px] font-black text-white uppercase tracking-wider scale-90">
-            Hot
+          
+          {/* 🌟 AJUSTADO: Badge indicando a fase de implementação */}
+          <span className="flex h-3.5 px-1 items-center justify-center rounded bg-amber-600/10 text-[8px] font-extrabold text-amber-700 border border-amber-600/20 uppercase tracking-wider scale-90 select-none">
+            Breve
           </span>
         </button>
       </div>

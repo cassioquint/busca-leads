@@ -55,7 +55,7 @@ export const PricingView: React.FC = () => {
               <ul className="space-y-3.5 border-t border-slate-100 pt-6">
                 <li className="flex items-start gap-2.5 text-sm text-slate-600">
                   <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                  <span><strong>15 buscas</strong> no Radar por mês</span>
+                  <span><strong>10 buscas</strong> no Radar por mês</span>
                 </li>
                 <li className="flex items-start gap-2.5 text-sm text-slate-600">
                   <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
