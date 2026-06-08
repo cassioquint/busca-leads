@@ -8,6 +8,7 @@ import { LoginView } from './LoginView';
 import { PricingView } from './PricingView';
 import { useCRM } from '@/hooks/useCRM';
 import { useAuth } from '@/hooks/useAuth';
+import { api } from '@/services/api';
 
 function App() {
   // Controla o estado de visualização de telas do app
@@ -47,10 +48,12 @@ function App() {
 
   // Estratégia de Pre-fetching: Manda um "cutucão" silencioso na Render assim que o App monta.
   useEffect(() => {
-    fetch('http://localhost:3001/api/status').catch(() => { });
+    api.getStatus().catch(() => {
+      console.log('Servidor em nuvem ainda a inicializar...');
+    });
   }, []);
 
-  // 🌟 NOVO: Lógica de redirecionamento disparada pelo botão interno do LimitModal
+  // Lógica de redirecionamento disparada pelo botão interno do LimitModal
   const handleNavigateToPricing = () => {
     setLimitModalOpen(false); // Fecha o modal elegantemente de forma global
     setView('pricing');       // Altera a view principal para exibir a tabela de preços

@@ -1,3 +1,4 @@
+import { systemApi } from './system';
 import { prospectApi } from './prospects';
 import { leadApi } from './leads';
 import { bucketApi } from './buckets';
@@ -5,6 +6,8 @@ import { tagApi } from './tags';
 import { userApi } from './users';
 
 export const api = {
+  getStatus: systemApi.getStatus,
+
   searchLeads: prospectApi.searchProspects,
 
   getFunilLeads: leadApi.getFunilLeads,
@@ -27,4 +30,5 @@ export const api = {
   deleteTag: tagApi.deleteTag,
 
   getProfile: userApi.getProfile
+
 };
