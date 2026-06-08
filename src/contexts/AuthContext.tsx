@@ -1,39 +1,82 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { type User, onAuthStateChanged, signOut } from 'firebase/auth';
+import React, { useEffect, useState } from 'react';
+import { type User as FirebaseUser, onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from '../services/firebase';
-
-// Define o que o nosso contexto vai espalhar pela aplicação
-interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  logout: () => Promise<void>;
-}
-
-const AuthContext = createContext<AuthContextType>({} as AuthContextType);
+import { api } from '@/services/api';
+import type { ExtendedUser } from '@/types';
+import { AuthContext } from './AuthContextCore';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<ExtendedUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isLimitModalOpen, setLimitModalOpen] = useState(false);
+
+  const fetchDbUserData = async (firebaseUser: FirebaseUser): Promise<Partial<ExtendedUser> | null> => {
+    try {
+      const token = await firebaseUser.getIdToken();
+      const dbData = await api.getProfile(token);
+      return dbData;
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Erro desconhecido';
+      console.error(`❌ Erro na sincronização do usuário com a Neon: ${msg}`);
+      return null;
+    }
+  };
+
+  const refreshUserData = async () => {
+    if (!auth.currentUser) return;
+    const dbData = await fetchDbUserData(auth.currentUser);
+    if (dbData) {
+      setUser((prev) => {
+        if (!prev) return null;
+        return { ...prev, ...dbData } as ExtendedUser;
+      });
+    }
+  };
 
   useEffect(() => {
-    // O Firebase fica "escutando" mudanças de login/logout
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false); // Terminou de verificar
+    let isMounted = true;
+
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        const dbData = await fetchDbUserData(currentUser);
+
+        if (isMounted) {
+          if (dbData) {
+            setUser({
+              ...currentUser,
+              ...dbData,
+            } as ExtendedUser);
+          } else {
+            setUser(currentUser as unknown as ExtendedUser);
+          }
+          setLoading(false);
+        }
+      } else {
+        if (isMounted) {
+          setUser(null);
+          setLoading(false);
+        }
+      }
     });
 
-    return () => unsubscribe();
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, []);
 
   const logout = () => signOut(auth);
 
   return (
-    <AuthContext.Provider value={{ user, loading, logout }}>
-      {/* Só renderiza o app depois de ter certeza se tem alguém logado ou não */}
+    <AuthContext.Provider value={{
+      user,
+      loading,
+      logout,
+      refreshUserData,
+      isLimitModalOpen,
+      setLimitModalOpen
+    }}>
       {!loading && children}
     </AuthContext.Provider>
   );
 };
-
-// Um atalho (Hook) para usarmos em qualquer tela
-export const useAuth = () => useContext(AuthContext);

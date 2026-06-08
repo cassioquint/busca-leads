@@ -1,6 +1,6 @@
 import React from 'react';
-import { Radar, LogOut, User as UserIcon, CreditCard } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { Radar, LogOut, User as UserIcon, CreditCard, Search } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface HeaderProps {
   onLogoClick?: () => void;
@@ -11,6 +11,10 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ onProfileClick, onLogoClick, onPricingClick }) => {
   // Puxa o usuário logado e a função de sair do Contexto de Autenticação
   const { user, logout } = useAuth();
+
+  // 🌟 Extrai dados de buscas reais do usuário atualizado
+  const buscasRealizadas = user?.searchesThisMonth ?? 0;
+  const limiteBuscas = user?.plan?.maxSearchesPerMonth ?? 15;
 
   return (
     <header className="shrink-0 w-full bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm z-50">
@@ -35,7 +39,7 @@ export const Header: React.FC<HeaderProps> = ({ onProfileClick, onLogoClick, onP
         {/* Separador vertical sutil entre a logo e os links */}
         <div className="h-6 w-px bg-slate-200 hidden sm:block"></div>
 
-        {/* 🌟 NOVO: Link/Botão de Navegação para a página de Planos */}
+        {/* Link/Botão de Navegação para a página de Planos */}
         <button
           type="button"
           onClick={onPricingClick}
@@ -51,6 +55,21 @@ export const Header: React.FC<HeaderProps> = ({ onProfileClick, onLogoClick, onP
 
       {/* PERFIL E LOGOUT */}
       <div className="flex items-center gap-4">
+        
+        <div 
+          className="hidden md:flex items-center gap-2 border border-slate-200/80 bg-slate-50/50 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-600 shadow-sm"
+          title="Consumo de buscas no radar este mês"
+        >
+          <Search className="w-3.5 h-3.5 text-slate-400" />
+          <span>Radar:</span>
+          <span className={`font-bold ${buscasRealizadas >= limiteBuscas ? 'text-amber-600' : 'text-slate-600'}`}>
+            {buscasRealizadas}/{limiteBuscas}
+          </span>
+        </div>
+
+        {/* Separador vertical quando o contador está visível */}
+        <div className="h-5 w-px bg-slate-200 hidden md:block"></div>
+
         <button
           type="button"
           onClick={onProfileClick}

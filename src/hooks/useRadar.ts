@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { api } from '../services/api';
+import { api } from '@/services/api';
 import { useAuth } from '../contexts/AuthContext';
 import type { Lead } from '../types';
 
@@ -18,7 +18,8 @@ export const useRadar = (
   const [pagination, setPagination] = useState({ hasMore: false, nextStart: 20 });
   const [lastSearchParams, setLastSearchParams] = useState({ query: '', city: '' });
 
-  const { user } = useAuth();
+  // 🌟 Injetado o setLimitModalOpen que estava faltando
+  const { setLimitModalOpen } = useAuth();
 
   const handleSearch = async (query: string, city: string) => {
     const cleanCity = city.split(' - ')[0].trim();
@@ -30,15 +31,27 @@ export const useRadar = (
     setLastSearchParams({ query, city: cleanCity });
 
     try {
-      const data = await api.searchLeads(query, cleanCity, user?.email || undefined, 0);
+      // 🌟 Atualizado para usar a nova api estruturada
+      const data = await api.searchLeads(query, cleanCity, undefined, 0);
+      
       setLeads(data.results);
       setPagination({
         hasMore: data.pagination.hasMore,
         nextStart: data.pagination.nextStart
       });
-    } catch (err) {
-      console.error("Erro na busca:", err);
-      setError('Ocorreu um erro ao buscar os leads. Verifique a conexão com o servidor.');
+    } catch (err: unknown) {
+      // 🌟 Remoção do 'any': Trata o erro tipando como um objeto estruturado de erro
+      const errorMessage = err instanceof Error ? err.message : 'Falha desconhecida';
+      
+      // Checa tanto a propriedade customizada status mapeada pela api quanto strings contidas na mensagem
+      const isRateLimited = (err as { status?: number }).status === 429 || errorMessage.includes('limite de buscas');
+
+      if (isRateLimited) {
+        setLimitModalOpen(true);
+      } else {
+        console.error("Erro na busca:", err);
+        setError(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -51,13 +64,13 @@ export const useRadar = (
     setIsLoadingMore(true);
 
     try {
-      const data = await api.searchLeads(query, city, user?.email || undefined, pagination.nextStart);
+      const data = await api.searchLeads(query, city, undefined, pagination.nextStart);
       setLeads(prev => [...prev, ...data.results]);
       setPagination({
         hasMore: data.pagination.hasMore,
         nextStart: data.pagination.nextStart
       });
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Erro ao carregar mais leads:", err);
       alert("Não foi possível carregar mais registros. Tente novamente.");
     } finally {

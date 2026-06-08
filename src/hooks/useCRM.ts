@@ -1,4 +1,4 @@
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useCRMData } from './useCRMData';
 import { useCRMLeads } from './useCRMLeads';
 import { useCRMConfig } from './useCRMConfig';
