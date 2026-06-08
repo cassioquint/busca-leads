@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { api } from '@/services/api';
-import { useAuth } from '../contexts/AuthContext';
-import type { Lead } from '../types';
+import { useAuth } from '@/hooks/useAuth';
+import type { Lead } from '@/types';
 
 export const useRadar = (
   leads: Lead[],

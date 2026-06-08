@@ -1,7 +1,7 @@
 import React from 'react';
 import { SearchBar, RadarResults } from './';
 import { useRadar } from '@/hooks/useRadar';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { ChevronLeft, ChevronRight, Radar } from 'lucide-react';
 import type { Lead } from '@/types';
