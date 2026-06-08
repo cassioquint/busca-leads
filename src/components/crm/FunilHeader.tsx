@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { UserPlus, Settings, Tag, Download, Plus, FileSpreadsheet, Upload } from 'lucide-react';
+import { UserPlus, Settings, Tag, Download, Plus, FileSpreadsheet, Upload, Sparkles } from 'lucide-react';
 import type { Lead, Tag as TagType } from '@/types';
 import { exportLeadsToExcel } from '@/utils/excelUtils';
 import { downloadTemplateExcel, processExcelImport } from '@/utils/excelImportUtils';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Bucket {
   id: string;
@@ -34,6 +35,13 @@ export const FunilHeader: React.FC<FunilHeaderProps> = ({
   const settingsRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Acessa os dados do plano e o gatilho do modal dinâmico
+  const { user, setLimitModalType } = useAuth();
+  
+  // Atalhos booleanos de permissão para simplificar as condicionais
+  const canImport = user?.plan?.bulkImportAllowed ?? false;
+  const canExport = user?.plan?.exportAllowed ?? false;
+
   // Fecha o menu de configurações automaticamente ao detectar cliques fora dele
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -49,12 +57,16 @@ export const FunilHeader: React.FC<FunilHeaderProps> = ({
     const file = e.target.files?.[0];
     if (!file || buckets.length === 0) return;
 
+    // Dupla checagem de segurança caso o input oculto seja burlado via DOM
+    if (!canImport) {
+      setLimitModalType('FUNNEL_LIMIT');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
     try {
-      // Descobre o ID da primeira coluna ativa para onde os leads irão cair
       const firstBucketId = buckets[0].id;
       const parsedLeads = await processExcelImport(file, firstBucketId);
-      
-      // Envia o array mapeado para o banco de dados
       await onImportLeadsInBulk(parsedLeads);
     } catch (error) { 
       const errorMessage = error instanceof Error ? error.message : 'Falha ao processar arquivo de importação.';
@@ -73,13 +85,14 @@ export const FunilHeader: React.FC<FunilHeaderProps> = ({
         </p>
       </div>
 
-      {/* Input invisível disparado via programação pelo botão do menu */}
+      {/* Input invisível protegido logicamente pelo disabled reativo */}
       <input 
         type="file" 
         ref={fileInputRef} 
         onChange={handleFileChange} 
         accept=".xlsx, .xls" 
-        className="hidden" 
+        className="hidden"
+        disabled={!canImport}
       />
 
       <div className="flex items-center gap-3">
@@ -109,8 +122,7 @@ export const FunilHeader: React.FC<FunilHeaderProps> = ({
           </button>
 
           {showSettingsMenu && (
-            /* 🌟 REVISADO: w-52 garante espaço horizontal para as novas opções */
-            <div className="absolute right-0 mt-2 w-52 bg-white border border-slate-200/80 rounded-xl shadow-2xl p-1.5 z-[50] text-left space-y-0.5 animate-in fade-in zoom-in-95 duration-100">
+            <div className="absolute right-0 mt-2 w-54 bg-white border border-slate-200/80 rounded-xl shadow-2xl p-1.5 z-[50] text-left space-y-0.5 animate-in fade-in zoom-in-95 duration-100">
               <button
                 type="button"
                 onClick={() => { onManageTagsClick(); setShowSettingsMenu(false); }}
@@ -120,35 +132,67 @@ export const FunilHeader: React.FC<FunilHeaderProps> = ({
                 <span>Gerenciar Rótulos</span>
               </button>
 
+              {/* EXPORTAR PARA EXCEL */}
               <button
                 type="button"
-                onClick={() => { exportLeadsToExcel(savedLeads, buckets, tags); setShowSettingsMenu(false); }}
+                onClick={() => {
+                  setShowSettingsMenu(false);
+                  if (!canExport) {
+                    setLimitModalType('FUNNEL_LIMIT');
+                    return;
+                  }
+                  exportLeadsToExcel(savedLeads, buckets, tags);
+                }}
                 disabled={savedLeads.length === 0}
-                className="w-full text-left text-xs text-slate-600 hover:bg-slate-50 hover:text-indigo-600 font-semibold px-2.5 py-2 rounded-lg transition-all flex items-center gap-2 cursor-pointer disabled:opacity-40"
+                className="w-full text-left text-xs text-slate-600 hover:bg-slate-50 hover:text-indigo-600 font-semibold px-2.5 py-2 rounded-lg transition-all flex items-center justify-between cursor-pointer disabled:opacity-40"
               >
-                <Download className="w-3.5 h-3.5 text-slate-400" />
-                <span>Exportar para Excel</span>
+                <div className="flex items-center gap-2">
+                  <Download className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Exportar para Excel</span>
+                </div>
+                {!canExport && <Sparkles className="w-3.5 h-3.5 text-indigo-500 fill-indigo-100 animate-pulse" />}
               </button>
 
               <div className="border-t border-slate-100 my-1" />
 
-              {/* 🌟 ADICIONADO: Baixar Planilha de Exemplo */}
+              {/* BAIXAR MODELO EXCEL */}
               <button
                 type="button"
-                onClick={() => { downloadTemplateExcel(); setShowSettingsMenu(false); }}
-                className="w-full text-left text-xs text-slate-600 hover:bg-slate-50 hover:text-indigo-600 font-semibold px-2.5 py-2 rounded-lg transition-all flex items-center gap-2 cursor-pointer"
+                onClick={() => {
+                  setShowSettingsMenu(false);
+                  if (!canImport) {
+                    setLimitModalType('FUNNEL_LIMIT');
+                    return;
+                  }
+                  downloadTemplateExcel();
+                }}
+                className="w-full text-left text-xs text-slate-600 hover:bg-slate-50 hover:text-indigo-600 font-semibold px-2.5 py-2 rounded-lg transition-all flex items-center justify-between cursor-pointer"
               >
-                <FileSpreadsheet className="w-3.5 h-3.5 text-slate-400" />
-                <span>Baixar Modelo Excel</span>
+                <div className="flex items-center gap-2">
+                  <FileSpreadsheet className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Baixar Modelo Excel</span>
+                </div>
+                {!canImport && <Sparkles className="w-3.5 h-3.5 text-indigo-500 fill-indigo-100 animate-pulse" />}
               </button>
 
+              {/* IMPORTAR PLANILHA */}
               <button
                 type="button"
-                onClick={() => { fileInputRef.current?.click(); setShowSettingsMenu(false); }}
-                className="w-full text-left text-xs text-slate-600 hover:bg-slate-50 hover:text-indigo-600 font-semibold px-2.5 py-2 rounded-lg transition-all flex items-center gap-2 cursor-pointer"
+                onClick={() => {
+                  setShowSettingsMenu(false);
+                  if (!canImport) {
+                    setLimitModalType('FUNNEL_LIMIT');
+                    return;
+                  }
+                  fileInputRef.current?.click();
+                }}
+                className="w-full text-left text-xs text-slate-600 hover:bg-slate-50 hover:text-indigo-600 font-semibold px-2.5 py-2 rounded-lg transition-all flex items-center justify-between cursor-pointer"
               >
-                <Upload className="w-3.5 h-3.5 text-slate-400" />
-                <span>Importar Planilha</span>
+                <div className="flex items-center gap-2">
+                  <Upload className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Importar Planilha</span>
+                </div>
+                {!canImport && <Sparkles className="w-3.5 h-3.5 text-indigo-500 fill-indigo-100 animate-pulse" />}
               </button>
 
               <div className="border-t border-slate-100 my-1" />

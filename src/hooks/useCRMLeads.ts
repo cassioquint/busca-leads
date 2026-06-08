@@ -24,8 +24,7 @@ export const useCRMLeads = ({
 }: UseCRMLeadsProps) => {
   const bucketsRef = useRef<Bucket[]>(buckets);
 
-  // 🌟 Injetado a assinatura baseada em enums do contexto
-  const { setLimitModalType } = useAuth();
+  const { setLimitModalType, user } = useAuth();
 
   useEffect(() => {
     bucketsRef.current = buckets;
@@ -180,6 +179,11 @@ export const useCRMLeads = ({
 
   const handleImportLeadsInBulk = async (newLeads: Partial<Lead>[]) => {
     if (!userEmail) return;
+
+    if (user?.plan && !user.plan.bulkImportAllowed) {
+      setLimitModalType('FUNNEL_LIMIT');
+      return;
+    }
     
     try {
       const savedLeadsFromServer = await api.importLeadsBulk(newLeads, userEmail);

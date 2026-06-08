@@ -14,27 +14,55 @@ export const LimitModal: React.FC<LimitModalProps> = ({ onGoToPricing }) => {
 
   const onClose = () => setLimitModalType(null);
 
-  // 🌟 Dicionário Dinâmico de Conteúdo baseado no Enum de Bloqueio
   const isSearchesLimit = limitModalType === 'SEARCHES_LIMIT';
   const planName = user?.plan?.name || 'Degustação';
 
-  const content = {
-    title: isSearchesLimit ? 'Ah não! Suas buscas acabaram...' : 'Atenção! Seu funil está cheio...',
-    description: isSearchesLimit ? (
-      <>
-        Você atingiu o limite máximo de <span className="font-bold text-slate-800">{user?.plan?.maxSearchesPerMonth ?? 15} buscas</span> mensais disponíveis no seu plano <span className="text-indigo-600 font-bold">{planName}</span>.
-      </>
-    ) : (
-      <>
-        Você atingiu o limite de armazenamento de <span className="font-bold text-slate-800">{user?.plan?.maxLeadsInFunnel ?? 20} leads ativos</span> simultâneos no quadro do plano <span className="text-indigo-600 font-bold">{planName}</span>.
-      </>
-    ),
-    badgeIcon: isSearchesLimit ? <Search className="w-4 h-4 fill-indigo-100" /> : <KanbanSquare className="w-4 h-4" />,
-    badgeTitle: isSearchesLimit ? 'Desbloqueie o Radar Ilimitado' : 'Aumente a Capacidade do Kanban',
-    badgeText: isSearchesLimit 
-      ? 'Assine um dos nossos pacotes comerciais para liberar importações em lote, exportação de relatórios e buscas sem travas.'
-      : 'Gere mais prospecções ativas limpando leads antigos ou fazendo upgrade para gerenciar centenas de empresas sem barreiras.'
+  const isFeatureBlocked = user?.plan && (!user.plan.bulkImportAllowed || !user.plan.exportAllowed);
+
+  const getContent = () => {
+    if (isSearchesLimit) {
+      return {
+        title: 'Ah não! Suas buscas acabaram...',
+        description: (
+          <>
+            Você atingiu o limite máximo de <span className="font-bold text-slate-800">{user?.plan?.maxSearchesPerMonth ?? 15} buscas</span> mensais disponíveis no seu plano <span className="text-indigo-600 font-bold">{planName}</span>.
+          </>
+        ),
+        badgeIcon: <Search className="w-4 h-4 fill-indigo-100" />,
+        badgeTitle: 'Desbloqueie o Radar Ilimitado',
+        badgeText: 'Assine um dos nossos pacotes comerciais para liberar importações em lote, exportação de relatórios e buscas sem travas.'
+      };
+    }
+
+    if (isFeatureBlocked) {
+      return {
+        title: 'Ops... Recurso não disponível',
+        description: (
+          <>
+            Faça o upgrade do seu plano para utilizar as ferramentas de <span className="font-bold text-slate-800">importação e exportação via planilha</span> no BuscaLeads.
+          </>
+        ),
+        badgeIcon: <Sparkles className="w-4 h-4 fill-indigo-100 text-indigo-600" />,
+        badgeTitle: 'Liberar Ferramentas de Produtividade',
+        badgeText: 'Acelere sua rotina trazendo listas prontas do Excel diretamente para o seu pipeline e exporte relatórios comerciais em segundos.'
+      };
+    }
+
+    // Cenário padrão: O plano permite o recurso, mas atingiu a capacidade volumétrica do Kanban
+    return {
+      title: 'Atenção! Seu funil está cheio...',
+      description: (
+        <>
+          Você atingiu o limite de armazenamento de <span className="font-bold text-slate-800">{user?.plan?.maxLeadsInFunnel ?? 20} leads ativos</span> simultâneos no quadro do plano <span className="text-indigo-600 font-bold">{planName}</span>.
+        </>
+      ),
+      badgeIcon: <KanbanSquare className="w-4 h-4" />,
+      badgeTitle: 'Aumente a Capacidade do Kanban',
+      badgeText: 'Gere mais prospecções ativas limpando leads antigos ou fazendo upgrade para gerenciar centenas de empresas sem barreiras.'
+    };
   };
+
+  const content = getContent();
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
@@ -128,7 +156,6 @@ export const LimitModal: React.FC<LimitModalProps> = ({ onGoToPricing }) => {
             Voltar depois
           </button>
         </div>
-
       </div>
     </div>
   );
