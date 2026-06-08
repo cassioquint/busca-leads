@@ -18,8 +18,8 @@ export const useRadar = (
   const [pagination, setPagination] = useState({ hasMore: false, nextStart: 20 });
   const [lastSearchParams, setLastSearchParams] = useState({ query: '', city: '' });
 
-  // 🌟 Injetado o setLimitModalOpen que estava faltando
-  const { setLimitModalOpen } = useAuth();
+  // 🌟 Atualizado: Consome a nova assinatura estruturada por enums do contexto
+  const { setLimitModalType } = useAuth();
 
   const handleSearch = async (query: string, city: string) => {
     const cleanCity = city.split(' - ')[0].trim();
@@ -31,7 +31,6 @@ export const useRadar = (
     setLastSearchParams({ query, city: cleanCity });
 
     try {
-      // 🌟 Atualizado para usar a nova api estruturada
       const data = await api.searchLeads(query, cleanCity, undefined, 0);
       
       setLeads(data.results);
@@ -40,14 +39,11 @@ export const useRadar = (
         nextStart: data.pagination.nextStart
       });
     } catch (err: unknown) {
-      // 🌟 Remoção do 'any': Trata o erro tipando como um objeto estruturado de erro
       const errorMessage = err instanceof Error ? err.message : 'Falha desconhecida';
       
-      // Checa tanto a propriedade customizada status mapeada pela api quanto strings contidas na mensagem
-      const isRateLimited = (err as { status?: number }).status === 429 || errorMessage.includes('limite de buscas');
-
-      if (isRateLimited) {
-        setLimitModalOpen(true);
+      // 🌟 Validação Limpa por Enum: Se o serviço devolveu o código de limite de buscas
+      if (errorMessage === 'SEARCHES_LIMIT' || (err as { status?: number }).status === 429) {
+        setLimitModalType('SEARCHES_LIMIT');
       } else {
         console.error("Erro na busca:", err);
         setError(errorMessage);

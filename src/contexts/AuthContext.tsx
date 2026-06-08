@@ -3,12 +3,13 @@ import { type User as FirebaseUser, onAuthStateChanged, signOut } from 'firebase
 import { auth } from '../services/firebase';
 import { api } from '@/services/api';
 import type { ExtendedUser } from '@/types';
-import { AuthContext } from './AuthContextCore';
+import { AuthContext, type LimitModalType } from './AuthContextCore';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<ExtendedUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isLimitModalOpen, setLimitModalOpen] = useState(false);
+  
+  const [limitModalType, setLimitModalType] = useState<LimitModalType>(null);
 
   const fetchDbUserData = async (firebaseUser: FirebaseUser): Promise<Partial<ExtendedUser> | null> => {
     try {
@@ -73,8 +74,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       loading,
       logout,
       refreshUserData,
-      isLimitModalOpen,
-      setLimitModalOpen
+      limitModalType,
+      setLimitModalType
     }}>
       {!loading && children}
     </AuthContext.Provider>

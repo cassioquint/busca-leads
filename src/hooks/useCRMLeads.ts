@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react';
 import { api } from '@/services/api';
+import { useAuth } from '@/hooks/useAuth';
 import type { Lead, Bucket, Tag } from '@/types';
 
 interface UseCRMLeadsProps {
@@ -23,7 +24,9 @@ export const useCRMLeads = ({
 }: UseCRMLeadsProps) => {
   const bucketsRef = useRef<Bucket[]>(buckets);
 
-  // 🌟 FIX: Sincronização do ref movida com segurança para fora do fluxo de renderização
+  // 🌟 Injetado a assinatura baseada em enums do contexto
+  const { setLimitModalType } = useAuth();
+
   useEffect(() => {
     bucketsRef.current = buckets;
   }, [buckets]);
@@ -43,11 +46,18 @@ export const useCRMLeads = ({
     try {
       const savedLeadFromDB = await api.saveLeadToFunil(id, userEmail);
       setFunilLeads(prev => prev.map(l => l.id === id ? savedLeadFromDB : l));
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(error);
+      
+      // Reverte o estado otimista em tela se der erro
       setRadarLeads(prev => prev.map(l => l.id === id ? { ...l, isSaved: false } : l));
       setFunilLeads(prev => prev.filter(l => l.id !== id));
-      alert("Houve um erro ao salvar o lead.");
+
+      if (error instanceof Error && error.message === 'FUNNEL_LIMIT') {
+        setLimitModalType('FUNNEL_LIMIT');
+      } else {
+        alert("Houve um erro operacional ao salvar o lead.");
+      }
     }
   };
 
@@ -74,7 +84,6 @@ export const useCRMLeads = ({
     }
   };
 
-  // 🌟 FIX: Tipagem do payload corrigida de Partial<Lead>[] (array incorreto) para objeto de criação omitindo chaves do banco
   const handleAddManualLead = async (leadData: Omit<Lead, 'id' | 'userEmail' | 'isSaved' | 'bucketId'>) => {
     if (!userEmail || buckets.length === 0) return;
     const tempId = `manual-${Date.now()}`;
@@ -102,10 +111,17 @@ export const useCRMLeads = ({
     try {
       const savedLeadFromDB = await api.saveManualLeadToFunil(leadData, userEmail);
       setFunilLeads(prev => prev.map(l => l.id === tempId ? savedLeadFromDB : l));
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(error);
+      
+      // Desfaz a criação otimista
       setFunilLeads(prev => prev.filter(l => l.id !== tempId));
-      alert("Erro ao salvar o lead manual.");
+
+      if (error instanceof Error && error.message === 'FUNNEL_LIMIT') {
+        setLimitModalType('FUNNEL_LIMIT');
+      } else {
+        alert("Erro ao salvar o lead manual.");
+      }
     }
   };
 
@@ -158,11 +174,10 @@ export const useCRMLeads = ({
       if (leadToDelete?.googlePlaceId) {
         setRadarLeads(prev => prev.map(p => p.id === leadToDelete.googlePlaceId ? { ...p, isSaved: true } : p));
       }
-      alert("Erro ao excluir o lead.");
+      alert("Erro ao excluir the lead.");
     }
   };
 
-  // 🌟 FIX: Tipagem de any[] corrigida para Partial<Lead>[] em total conformidade com os utilitários de planilha
   const handleImportLeadsInBulk = async (newLeads: Partial<Lead>[]) => {
     if (!userEmail) return;
     
@@ -170,9 +185,14 @@ export const useCRMLeads = ({
       const savedLeadsFromServer = await api.importLeadsBulk(newLeads, userEmail);
       setFunilLeads(prev => [...prev, ...savedLeadsFromServer]);
       alert(`${savedLeadsFromServer.length} leads importados com sucesso!`);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(error);
-      alert('Erro ao salvar os leads importados no servidor.');
+      
+      if (error instanceof Error && error.message === 'FUNNEL_LIMIT') {
+        setLimitModalType('FUNNEL_LIMIT');
+      } else {
+        alert('Erro ao salvar os leads importados no servidor.');
+      }
     }
   };
 

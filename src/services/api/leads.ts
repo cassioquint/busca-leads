@@ -1,6 +1,47 @@
 import { BASE_URL, getAuthHeaders } from './client';
 import type { Lead } from '@/types';
 
+/**
+ * Função utilitária privada para tratar respostas de erro da API.
+ * Evita repetição de código (DRY) ao extrair enums estruturados do backend.
+ */
+async function handleApiError(response: Response, defaultMessage: string): Promise<never> {
+  // 🌟 CORREÇÃO: Tipagem segura substituindo o explicit 'any' por Record de chaves desconhecidas
+  let errorData: Record<string, unknown> = {};
+  
+  // 1. Tenta extrair o JSON de erro do backend com segurança
+  try {
+    const jsonData = await response.json();
+    if (jsonData && typeof jsonData === 'object') {
+      errorData = jsonData as Record<string, unknown>;
+    }
+  } catch {
+    // Caso o backend não retorne um JSON válido (ex: queda de servidor)
+  }
+
+  // 2. Valida se é um estouro de cota (429) com nosso código enum cadastrado
+  if (response.status === 429 && typeof errorData.code === 'string') {
+    // Criamos um erro sintomático passando a causa original contextualmente
+    throw new Error(errorData.code, { 
+      cause: new Error(`HTTP 429: ${(errorData.error as string) || defaultMessage}`) 
+    });
+  }
+
+  // 3. Bloco catch geral para unificar e preservar o rastreamento (stack trace)
+  try {
+    const customMessage = (errorData.error || errorData.message || defaultMessage) as string;
+    throw new Error(customMessage);
+  } catch (err: unknown) {
+    // Regra do ESLint: Se já for um dos nossos Enums mapeados acima, propaga direto
+    if (err instanceof Error && (err.message === 'FUNNEL_LIMIT' || err.message === 'SEARCHES_LIMIT')) {
+      throw err;
+    }
+    
+    // Solução Definitiva: Anexa o 'err' pego no catch dentro da propriedade 'cause'
+    throw new Error(defaultMessage, { cause: err });
+  }
+}
+
 export const leadApi = {
   // Busca os leads salvos no Funil do usuário
   async getFunilLeads(user: string) {
@@ -19,7 +60,11 @@ export const leadApi = {
       headers,
       body: JSON.stringify({ prospectId, user })
     });
-    if (!response.ok) throw new Error('Falha ao salvar o lead no banco de dados');
+    
+    // 🌟 Atualizado: Intercepta o erro de forma estruturada
+    if (!response.ok) {
+      await handleApiError(response, 'Falha ao salvar o lead no banco de dados');
+    }
     return response.json();
   },
 
@@ -32,7 +77,10 @@ export const leadApi = {
       body: JSON.stringify({ ...leadData, user })
     });
 
-    if (!response.ok) throw new Error('Falha ao salvar o lead manual no banco');
+    // 🌟 Atualizado: Protege a criação manual contra estouro de cota
+    if (!response.ok) {
+      await handleApiError(response, 'Falha ao salvar o lead manual no banco');
+    }
     return response.json();
   },
 
@@ -45,11 +93,14 @@ export const leadApi = {
       body: JSON.stringify({ leads, user })
     });
 
-    if (!response.ok) throw new Error('Falha ao realizar a importação em lote no servidor');
+    // 🌟 Atualizado: Protege a importação em lote contra falta de cota ou recurso bloqueado
+    if (!response.ok) {
+      await handleApiError(response, 'Falha ao realizar a importação em lote no servidor');
+    }
     return response.json();
   },
 
-  // Aktualiza a coluna (bucket) de um lead específico
+  // Atualiza a coluna (bucket) de um lead específico
   async updateLeadBucket(leadId: string, bucketId: string, user: string) {
     const headers = await getAuthHeaders();
     const response = await fetch(`${BASE_URL}/funil/move`, {

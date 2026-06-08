@@ -17,8 +17,7 @@ function App() {
   // Controla se o Sidebar do Radar está expandido ou colapsado
   const [isRadarOpen, setIsRadarOpen] = useState(true);
 
-  // Consome a inteligência do contexto de autenticação
-  const { user, loading, isLimitModalOpen, setLimitModalOpen } = useAuth();
+  const { user, loading, setLimitModalType } = useAuth();
 
   // Desestrutura as propriedades dinâmicas do Kanban vindas do hook especialista
   const {
@@ -46,17 +45,16 @@ function App() {
     handleImportLeadsInBulk,
   } = useCRM();
 
-  // Estratégia de Pre-fetching: Manda um "cutucão" silencioso na Render assim que o App monta.
+  // Estratégia de Pre-fetching: Acorda o servidor em nuvem usando a nossa chamada estruturada
   useEffect(() => {
     api.getStatus().catch(() => {
       console.log('Servidor em nuvem ainda a inicializar...');
     });
   }, []);
 
-  // Lógica de redirecionamento disparada pelo botão interno do LimitModal
   const handleNavigateToPricing = () => {
-    setLimitModalOpen(false); // Fecha o modal elegantemente de forma global
-    setView('pricing');       // Altera a view principal para exibir a tabela de preços
+    setLimitModalType(null); // Fecha o modal elegantemente de forma global
+    setView('pricing');      // Altera a view principal para exibir a tabela de preços
   };
 
   // Se o Firebase ainda estiver pensando, mostra a tela de carregamento
@@ -65,7 +63,7 @@ function App() {
       <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center font-semibold text-slate-500 text-xs">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
-          <span>A sincronizar a sua conta...</span>
+          <span>Sincronizando sua conta...</span>
         </div>
       </div>
     );
@@ -147,14 +145,7 @@ function App() {
 
       </main>
 
-      {/* 🌟 MODAL GLOBAL DE LIMITE DO PLANO */}
-      <LimitModal
-        isOpen={isLimitModalOpen}
-        onClose={() => setLimitModalOpen(false)}
-        onGoToPricing={handleNavigateToPricing}
-        planName={user?.plan?.name || 'Degustação'}
-        maxSearches={user?.plan?.maxSearchesPerMonth || 15}
-      />
+      <LimitModal onGoToPricing={handleNavigateToPricing} />
     </div>
   );
 }

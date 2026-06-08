@@ -1,22 +1,40 @@
 import React from 'react';
-import { X, Sparkles, AlertCircle } from 'lucide-react';
+import { X, Sparkles, AlertCircle, KanbanSquare, Search } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface LimitModalProps {
-  isOpen: boolean;
-  onClose: () => void;
   onGoToPricing: () => void;
-  planName: string;
-  maxSearches: number;
 }
 
-export const LimitModal: React.FC<LimitModalProps> = ({
-  isOpen,
-  onClose,
-  onGoToPricing,
-  planName,
-  maxSearches,
-}) => {
-  if (!isOpen) return null;
+export const LimitModal: React.FC<LimitModalProps> = ({ onGoToPricing }) => {
+  const { limitModalType, setLimitModalType, user } = useAuth();
+
+  // Se o modal não estiver ativo para nenhum bloqueio, não renderiza nada
+  if (!limitModalType) return null;
+
+  const onClose = () => setLimitModalType(null);
+
+  // 🌟 Dicionário Dinâmico de Conteúdo baseado no Enum de Bloqueio
+  const isSearchesLimit = limitModalType === 'SEARCHES_LIMIT';
+  const planName = user?.plan?.name || 'Degustação';
+
+  const content = {
+    title: isSearchesLimit ? 'Ah não! Suas buscas acabaram...' : 'Atenção! Seu funil está cheio...',
+    description: isSearchesLimit ? (
+      <>
+        Você atingiu o limite máximo de <span className="font-bold text-slate-800">{user?.plan?.maxSearchesPerMonth ?? 15} buscas</span> mensais disponíveis no seu plano <span className="text-indigo-600 font-bold">{planName}</span>.
+      </>
+    ) : (
+      <>
+        Você atingiu o limite de armazenamento de <span className="font-bold text-slate-800">{user?.plan?.maxLeadsInFunnel ?? 20} leads ativos</span> simultâneos no quadro do plano <span className="text-indigo-600 font-bold">{planName}</span>.
+      </>
+    ),
+    badgeIcon: isSearchesLimit ? <Search className="w-4 h-4 fill-indigo-100" /> : <KanbanSquare className="w-4 h-4" />,
+    badgeTitle: isSearchesLimit ? 'Desbloqueie o Radar Ilimitado' : 'Aumente a Capacidade do Kanban',
+    badgeText: isSearchesLimit 
+      ? 'Assine um dos nossos pacotes comerciais para liberar importações em lote, exportação de relatórios e buscas sem travas.'
+      : 'Gere mais prospecções ativas limpando leads antigos ou fazendo upgrade para gerenciar centenas de empresas sem barreiras.'
+  };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
@@ -39,7 +57,7 @@ export const LimitModal: React.FC<LimitModalProps> = ({
           <X className="w-4 h-4" />
         </button>
 
-        {/* 🌟 ILUSTRAÇÃO: CARINHA CHORANDO EM TAILWIND ANMADA */}
+        {/* ILUSTRAÇÃO: CARINHA CHORANDO EM TAILWIND ANIMADA */}
         <div className="relative pt-2">
           {/* Cabeça */}
           <div className="w-20 h-20 bg-amber-50 border border-amber-200 rounded-full flex flex-col items-center justify-center relative shadow-sm">
@@ -65,25 +83,25 @@ export const LimitModal: React.FC<LimitModalProps> = ({
           </div>
         </div>
 
-        {/* MENSAGEM */}
+        {/* MENSAGEM DINÂMICA */}
         <div className="space-y-2">
           <h2 className="text-lg font-extrabold text-slate-900 tracking-tight">
-            Ah não! Suas buscas acabaram...
+            {content.title}
           </h2>
           <p className="text-xs text-slate-500 font-medium leading-relaxed px-2">
-            Você atingiu o limite máximo de <span className="font-bold text-slate-800">{maxSearches} buscas</span> mensais disponíveis no seu plano <span className="text-indigo-600 font-bold">{planName}</span>.
+            {content.description}
           </p>
         </div>
 
-        {/* CONTEXTO DE BENEFÍCIO */}
+        {/* CONTEXTO DE BENEFÍCIO DINÂMICO */}
         <div className="w-full bg-slate-50/80 border border-slate-100 rounded-2xl p-3.5 text-left flex items-start gap-3">
           <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl shrink-0">
-            <Sparkles className="w-4 h-4 fill-indigo-100" />
+            {content.badgeIcon}
           </div>
           <div>
-            <h4 className="text-xs font-bold text-slate-800">Desbloqueie o Radar Ilimitado</h4>
+            <h4 className="text-xs font-bold text-slate-800">{content.badgeTitle}</h4>
             <p className="text-[10px] text-slate-500 font-medium mt-0.5 leading-normal">
-              Assine um dos nossos pacotes comerciais para liberar importações em lote, exportação de relatórios e buscas sem travas.
+              {content.badgeText}
             </p>
           </div>
         </div>
@@ -92,9 +110,13 @@ export const LimitModal: React.FC<LimitModalProps> = ({
         <div className="w-full flex flex-col gap-2 pt-1">
           <button
             type="button"
-            onClick={onGoToPricing}
+            onClick={() => {
+              onClose();
+              onGoToPricing();
+            }}
             className="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-bold text-xs py-3 rounded-xl shadow-lg shadow-indigo-100 transition-all cursor-pointer flex items-center justify-center gap-2"
           >
+            <Sparkles className="w-3.5 h-3.5 fill-white" />
             <span>Ver Planos e Preços</span>
           </button>
           
