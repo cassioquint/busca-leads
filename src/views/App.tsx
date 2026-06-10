@@ -77,7 +77,7 @@ function App() {
   // Renderiza a interface unificada do CRM
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans antialiased flex flex-col h-screen overflow-hidden">
-      
+
       {/* Cabeçalho centralizado com os mapeamentos corretos das views */}
       <Header
         onProfileClick={() => setView(view === 'profile' ? 'crm' : 'profile')}
@@ -90,7 +90,10 @@ function App() {
 
         {/* Estrutura lógica chaveada para renderizar 'profile', 'pricing' ou o 'crm' padrão */}
         {view === 'profile' && (
-          <ProfileView onNavigateBack={() => setView('crm')} />
+          <ProfileView
+            onNavigateBack={() => setView('crm')}
+            onNavigateToPricing={() => setView('pricing')}
+          />
         )}
 
         {view === 'pricing' && (

@@ -8,9 +8,9 @@ export interface AuthContextType {
   loading: boolean;
   logout: () => Promise<void>;
   refreshUserData: () => Promise<void>;
-  // 🌟 Alterado de boolean para o nosso tipo unificado de controle
   limitModalType: LimitModalType;
   setLimitModalType: (type: LimitModalType) => void;
+  getFirebaseToken: () => Promise<string>;
 }
 
 export const AuthContext = createContext<AuthContextType>({

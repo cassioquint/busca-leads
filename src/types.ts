@@ -53,5 +53,7 @@ export interface ExtendedUser {
   searchesThisMonth: number;
   planId: string;
   plan: PlanData;
+  asaasCustomerId: string | null;
+  asaasSubscriptionId: string | null;
   getIdToken: (forceRefresh?: boolean) => Promise<string>;
 }

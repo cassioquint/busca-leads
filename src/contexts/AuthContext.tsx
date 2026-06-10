@@ -68,6 +68,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => signOut(auth);
 
+  // Atalho seguro e reativo para pegar o token do Firebase a qualquer momento
+  const getFirebaseToken = async (): Promise<string> => {
+    if (!auth.currentUser) return '';
+    return await auth.currentUser.getIdToken();
+  };
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -75,7 +81,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       logout,
       refreshUserData,
       limitModalType,
-      setLimitModalType
+      setLimitModalType,
+      getFirebaseToken
     }}>
       {!loading && children}
     </AuthContext.Provider>

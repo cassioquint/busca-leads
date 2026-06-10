@@ -12,9 +12,11 @@ export const Header: React.FC<HeaderProps> = ({ onProfileClick, onLogoClick, onP
   // Puxa o usuário logado e a função de sair do Contexto de Autenticação
   const { user, logout } = useAuth();
 
-  // 🌟 Extrai dados de buscas reais do usuário atualizado
+  // Extrai dados de buscas reais do usuário atualizado
   const buscasRealizadas = user?.searchesThisMonth ?? 0;
   const limiteBuscas = user?.plan?.maxSearchesPerMonth ?? 15;
+
+  const isFreeUser = !user?.plan || user?.plan?.slug === 'free';
 
   return (
     <header className="shrink-0 w-full bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm z-50">
@@ -36,18 +38,22 @@ export const Header: React.FC<HeaderProps> = ({ onProfileClick, onLogoClick, onP
           </div>
         </button>
 
-        {/* Separador vertical sutil entre a logo e os links */}
-        <div className="h-6 w-px bg-slate-200 hidden sm:block"></div>
+        {isFreeUser && (
+          <>
+            {/* Separador vertical sutil entre a logo e os links */}
+            <div className="h-6 w-px bg-slate-200 hidden sm:block"></div>
 
-        {/* Link/Botão de Navegação para a página de Planos */}
-        <button
-          type="button"
-          onClick={onPricingClick}
-          className="hidden sm:flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-indigo-600 px-3 py-2 rounded-xl hover:bg-slate-50 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/10"
-        >
-          <CreditCard className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 transition-colors" />
-          <span>Planos e Preços</span>
-        </button>
+            {/* Link/Botão de Navegação para a página de Planos */}
+            <button
+              type="button"
+              onClick={onPricingClick}
+              className="hidden sm:flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-indigo-600 px-3 py-2 rounded-xl hover:bg-slate-50 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/10"
+            >
+              <CreditCard className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 transition-colors" />
+              <span>Planos e Preços</span>
+            </button>
+          </>
+        )}
       </div>
 
       {/* ESPAÇO CENTRAL FLUIDO */}
