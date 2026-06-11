@@ -83,5 +83,25 @@ export const userApi = {
     }
 
     return response.json();
+  },
+
+  /**
+   * Dispara a solicitação de cancelamento da recorrência atual do cliente
+   */
+  async cancelSubscription(token: string): Promise<{ success: boolean; message: string }> {
+    const response = await fetch(`${BASE_URL}/payment/subscription`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Falha ao processar cancelamento no servidor.');
+    }
+
+    return response.json();
   }
 };

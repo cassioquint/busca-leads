@@ -54,17 +54,24 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigateBack, onNavi
     setLoadingCancel(true);
     try {
       const token = await getFirebaseToken();
-      if (!token) throw new Error('Sessão expirada.');
+      if (!token) throw new Error('Sessão expirada. Refaça o login.');
 
-      // Chamada fictícia/futura do seu backend que desativa no Asaas e vira Free no banco
-      // await userApi.cancelSubscription(token);
-
+      await userApi.cancelSubscription(token);
+      
+      // Sincroniza o novo estado do usuário (planId voltando para o free, etc.)
       await refreshUserData();
+      
+      // Fecha o modal de retenção de forma limpa
       setShowCancelModal(false);
-      alert('Sua assinatura foi cancelada. Ao final do ciclo atual, sua conta retornará ao plano Free.');
+      
+      onNavigateBack();
+
     } catch (error) {
       console.error('Erro ao cancelar assinatura:', error);
-      alert('Falha interna ao processar cancelamento. Tente novamente ou contate o suporte.');
+      const msg = error instanceof Error ? error.message : 'Falha interna ao processar cancelamento.';
+      
+      // Aqui mantemos um feedback ou setamos em um estado de erro caso o backend recuse
+      alert(`Não foi possível cancelar: ${msg}`);
     } finally {
       setLoadingCancel(false);
     }
@@ -184,7 +191,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigateBack, onNavi
           <SecurityForm user={firebaseUserInstance} />
         )}
 
-        {/* 🌟 BOTÃO DE CANCELAMENTO TOTALMENTE ESCONDIDO E DISCRETO NO RODAPÉ */}
+        {/* BOTÃO DE CANCELAMENTO TOTALMENTE ESCONDIDO E DISCRETO NO RODAPÉ */}
         {!isFreeUser && (
           <div className="pt-2 text-center">
             <button
