@@ -4,7 +4,7 @@ import { updatePassword } from 'firebase/auth';
 import type { User } from 'firebase/auth';
 
 interface SecurityFormProps {
-  user: User | null; // Trocado any por User
+  user: User | null;
 }
 
 export const SecurityForm: React.FC<SecurityFormProps> = ({ user }) => {

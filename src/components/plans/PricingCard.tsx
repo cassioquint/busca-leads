@@ -11,6 +11,7 @@ interface PricingCardProps {
   title: string;
   description: string;
   price: string;
+  period: string;
   subtitle: string;
   aspect: string;
   icon: React.ReactNode;
@@ -26,6 +27,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
   title,
   description,
   price,
+  period,
   subtitle,
   aspect,
   icon,
@@ -66,7 +68,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
             <span className={`${price === '0' ? 'text-3xl' : 'text-4xl'} font-extrabold tracking-tight`}>
               {price === '0' ? 'R$ 0' : price}
             </span>
-            <span className="ml-1 text-sm font-semibold text-slate-500">/mês</span>
+            <span className="ml-1 text-sm font-semibold text-slate-500">{period !== "" ? "/" + period : ""}</span>
           </div>
           <p className={`text-[11px] font-medium mt-1 ${isPopular ? 'text-indigo-600 font-bold' : 'text-slate-400'}`}>
             { aspect }

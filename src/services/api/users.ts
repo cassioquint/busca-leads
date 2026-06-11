@@ -1,6 +1,17 @@
 import { BASE_URL } from './client';
 import type { ExtendedUser } from '@/types';
 
+export interface PlanData {
+  id: string;
+  slug: string;
+  name: string;
+  price: number;
+  maxSearchesPerMonth: number;
+  maxLeadsInFunnel: number;
+  bulkImportAllowed: boolean;
+  exportAllowed: boolean;
+}
+
 export interface UpdateBillingPayload {
   cpfCnpj?: string;
   mobilePhone?: string;
@@ -48,6 +59,24 @@ export const userApi = {
 
     if (!response.ok) {
       throw new Error('Falha ao obter os dados de perfil no banco de dados.');
+    }
+
+    return response.json();
+  },
+
+  /**
+   * Busca todos os planos cadastrados no banco
+   */
+  async getPlans(token: string): Promise<PlanData[]> {
+    const response = await fetch(`${BASE_URL}/plans`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Falha ao carregar planos de preços.');
     }
 
     return response.json();
