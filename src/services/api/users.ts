@@ -1,6 +1,15 @@
 import { BASE_URL } from './client';
 import type { ExtendedUser } from '@/types';
 
+export interface UpdateBillingPayload {
+  cpfCnpj?: string;
+  mobilePhone?: string;
+  postalCode?: string;
+  address?: string;
+  addressNumber?: string;
+  province?: string;
+}
+
 export interface CheckoutPayload {
   // Dados do plano escolhido no frontend
   planKey: 'starter' | 'pro';
@@ -39,6 +48,27 @@ export const userApi = {
 
     if (!response.ok) {
       throw new Error('Falha ao obter os dados de perfil no banco de dados.');
+    }
+
+    return response.json();
+  },
+
+  /**
+   * Atualiza os dados de faturamento e endereço do usuário
+   */
+  async updateBillingData(token: string, payload: UpdateBillingPayload): Promise<{ success: boolean; message?: string }> {
+    const response = await fetch(`${BASE_URL}/users/me/billing`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Falha ao atualizar dados de faturamento no servidor.');
     }
 
     return response.json();

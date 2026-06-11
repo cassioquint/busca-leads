@@ -45,8 +45,8 @@ export interface PlanData {
 }
 
 export interface ExtendedUser {
-  // Como aqui não temos o escopo do Firebase puro direto, podemos tipar as propriedades base
   uid: string;
+  name?: string;
   email: string | null;
   displayName: string | null;
   photoURL: string | null;
@@ -55,5 +55,11 @@ export interface ExtendedUser {
   plan: PlanData;
   asaasCustomerId: string | null;
   asaasSubscriptionId: string | null;
+  cpfCnpj?: string;
+  mobilePhone?: string;
+  postalCode?: string;
+  address?: string;
+  addressNumber?: string;
+  province?: string;
   getIdToken: (forceRefresh?: boolean) => Promise<string>;
 }

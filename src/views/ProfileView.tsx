@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ShieldCheck, Award, Zap, ExternalLink, Loader2, ArrowLeft, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { ProfileDataForm } from './profile/ProfileDataForm';
+import { BillingDataForm } from './profile/BillingDataForm';
 import { SecurityForm } from './profile/SecurityForm';
 import { userApi } from '@/services/api/users';
 import { CancelPlanModal } from '@/components/plans/CancelPlanModal';
@@ -100,6 +101,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigateBack, onNavi
 
         {/* COMPONENTE 1: FORMULÁRIO DE DADOS CADASTRAIS */}
         <ProfileDataForm user={firebaseUserInstance} />
+
+        {/* ENDEREÇO E FATURAMENTO */}
+        <BillingDataForm user={user} />
 
         {/* DETALHES DO PLANO ATUAL DO USUÁRIO */}
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-5">

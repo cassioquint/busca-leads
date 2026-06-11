@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, ShieldCheck, Loader2 } from 'lucide-react';
+import { formatCpfCnpj, formatPhone, formatCep } from '@/utils/masks';
 
 export interface BillingModalData {
   name: string;
@@ -14,7 +15,7 @@ export interface BillingModalData {
 interface BillingFormModalProps {
   isOpen: boolean;
   isLoading: boolean;
-  initialName: string;
+  initialData?: Partial<BillingModalData> | null;
   planName: string;
   error: string;
   onClose: () => void;
@@ -24,26 +25,33 @@ interface BillingFormModalProps {
 export const BillingFormModal: React.FC<BillingFormModalProps> = ({
   isOpen,
   isLoading,
-  initialName,
+  initialData,
   planName,
   error,
   onClose,
   onSubmit,
 }) => {
   const [formData, setFormData] = useState<BillingModalData>({
-    name: initialName,
-    cpfCnpj: '',
-    mobilePhone: '',
-    postalCode: '',
-    address: '',
-    addressNumber: '',
-    province: '',
+    name: initialData?.name || '',
+    cpfCnpj: initialData?.cpfCnpj || '',
+    mobilePhone: initialData?.mobilePhone || '',
+    postalCode: initialData?.postalCode || '',
+    address: initialData?.address || '',
+    addressNumber: initialData?.addressNumber || '',
+    province: initialData?.province || '',
   });
 
   if (!isOpen) return null;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    let formattedValue = value;
+
+    if (name === 'cpfCnpj') formattedValue = formatCpfCnpj(value);
+    else if (name === 'mobilePhone') formattedValue = formatPhone(value);
+    else if (name === 'postalCode') formattedValue = formatCep(value);
+
+    setFormData((prev) => ({ ...prev, [name]: formattedValue }));
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -55,7 +63,6 @@ export const BillingFormModal: React.FC<BillingFormModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm transition-all animate-fade-in">
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-[480px] w-full overflow-hidden flex flex-col max-h-[90vh]">
         
-        {/* HEADER */}
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
           <div>
             <h3 className="text-sm font-bold text-slate-900">Dados de Faturamento</h3>
@@ -71,7 +78,6 @@ export const BillingFormModal: React.FC<BillingFormModalProps> = ({
           </button>
         </div>
 
-        {/* FORM */}
         <form onSubmit={handleFormSubmit} className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
           {error && (
             <p className="text-xs font-semibold text-rose-500 bg-rose-50 border border-rose-100 p-3 rounded-xl text-center">
@@ -95,7 +101,7 @@ export const BillingFormModal: React.FC<BillingFormModalProps> = ({
             </div>
 
             <div>
-              <label className="text-[11px] font-bold text-slate-600 block mb-1">CPF ou CNPJ (Apenas números)</label>
+              <label className="text-[11px] font-bold text-slate-600 block mb-1">CPF ou CNPJ</label>
               <input
                 type="text"
                 name="cpfCnpj"
@@ -103,7 +109,7 @@ export const BillingFormModal: React.FC<BillingFormModalProps> = ({
                 disabled={isLoading}
                 value={formData.cpfCnpj}
                 onChange={handleChange}
-                placeholder="Ex: 01234567899"
+                placeholder="000.000.000-00"
                 className="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-medium text-slate-800 placeholder-slate-400 bg-white focus:outline-none focus:border-indigo-500 transition-all"
               />
             </div>
@@ -117,7 +123,7 @@ export const BillingFormModal: React.FC<BillingFormModalProps> = ({
                 disabled={isLoading}
                 value={formData.mobilePhone}
                 onChange={handleChange}
-                placeholder="Ex: 5599999999"
+                placeholder="(00) 00000-0000"
                 className="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-medium text-slate-800 placeholder-slate-400 bg-white focus:outline-none focus:border-indigo-500 transition-all"
               />
             </div>
@@ -166,7 +172,7 @@ export const BillingFormModal: React.FC<BillingFormModalProps> = ({
                 />
               </div>
               <div>
-                <label className="text-[11px] font-bold text-slate-600 block mb-1">CEP (Apenas números)</label>
+                <label className="text-[11px] font-bold text-slate-600 block mb-1">CEP</label>
                 <input
                   type="text"
                   name="postalCode"
@@ -174,7 +180,7 @@ export const BillingFormModal: React.FC<BillingFormModalProps> = ({
                   disabled={isLoading}
                   value={formData.postalCode}
                   onChange={handleChange}
-                  placeholder="Ex: 93700000"
+                  placeholder="00000-000"
                   className="w-full border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-medium text-slate-800 placeholder-slate-400 bg-white focus:outline-none focus:border-indigo-500 transition-all"
                 />
               </div>
@@ -186,7 +192,6 @@ export const BillingFormModal: React.FC<BillingFormModalProps> = ({
             <span>Processamento fiscal emitido via Asaas Sandbox.</span>
           </div>
 
-          {/* ACTIONS */}
           <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
             <button
               type="button"
@@ -212,7 +217,6 @@ export const BillingFormModal: React.FC<BillingFormModalProps> = ({
             </button>
           </div>
         </form>
-
       </div>
     </div>
   );

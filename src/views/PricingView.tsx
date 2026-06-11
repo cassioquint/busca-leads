@@ -1,4 +1,3 @@
-// src/views/PricingView.tsx
 import React, { useState } from 'react';
 import { Shield, Zap, Crown, HelpCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -8,11 +7,10 @@ import { BillingFormModal, type BillingModalData } from '@/components/plans/Bill
 
 export const PricingView: React.FC = () => {
   const { user, getFirebaseToken } = useAuth();
-  
+
   // Estados para controle de faturamento
   const [loadingPlan, setLoadingPlan] = useState<'starter' | 'pro' | null>(null);
   const [showFormModal, setShowFormModal] = useState(false);
-  // 🌟 CORREÇÃO: Tipagem do estado restrita aos planos aceitos pelo gateway
   const [selectedPlanKey, setSelectedPlanKey] = useState<'starter' | 'pro' | null>(null);
   const [formError, setFormError] = useState('');
 
@@ -24,21 +22,14 @@ export const PricingView: React.FC = () => {
 
   const handleSelectPlan = async (planKey: 'starter' | 'pro') => {
     setSelectedPlanKey(planKey);
-    
-    // 🌟 SE O USUÁRIO JÁ FOR CLIENTE NO ASAAS: Dispara direto sem abrir o modal
-    if (user?.asaasCustomerId) {
-      await executeCheckout(planKey, {});
-    } else {
-      // 🌟 SE FOR A PRIMEIRA COMPRA: Abre o modal para colher os dados completos de endereço/telefone
-      setFormError('');
-      setShowFormModal(true);
-    }
+    setFormError('');
+    setShowFormModal(true);
   };
-
+  
   const executeCheckout = async (planKey: 'starter' | 'pro', additionalData: Partial<BillingModalData>) => {
     setLoadingPlan(planKey);
     setFormError('');
-    
+
     try {
       const token = await getFirebaseToken();
       if (!token) throw new Error('Sessão expirada. Refaça o login.');
@@ -46,7 +37,7 @@ export const PricingView: React.FC = () => {
       // 🚀 ENVIO CORRETO: Repassa o planKey selecionado e os dados fiscais reais informados no modal
       const response = await userApi.initializeCheckout(token, {
         planKey: planKey,
-        billingType: 'UNDEFINED', 
+        billingType: 'UNDEFINED',
         ...additionalData
       } as CheckoutPayload);
 
@@ -66,18 +57,18 @@ export const PricingView: React.FC = () => {
   const handleModalSubmit = (modalData: BillingModalData) => {
     // Validação estrita no frontend dos campos adicionados
     if (
-      !modalData.name.trim() || 
-      !modalData.cpfCnpj.trim() || 
-      !modalData.mobilePhone.trim() || 
-      !modalData.postalCode.trim() || 
-      !modalData.address.trim() || 
-      !modalData.addressNumber.trim() || 
+      !modalData.name.trim() ||
+      !modalData.cpfCnpj.trim() ||
+      !modalData.mobilePhone.trim() ||
+      !modalData.postalCode.trim() ||
+      !modalData.address.trim() ||
+      !modalData.addressNumber.trim() ||
       !modalData.province.trim()
     ) {
       setFormError('Todos os campos de endereço, telefone e documento são obrigatórios para emissão fiscal.');
       return;
     }
-    
+
     // 🌟 CORREÇÃO: Garante o casamento estrito de tipos ao repassar o estado para a execução
     if (selectedPlanKey) {
       executeCheckout(selectedPlanKey, modalData);
@@ -87,7 +78,7 @@ export const PricingView: React.FC = () => {
   return (
     <div className="flex-1 h-full bg-[#f8fafc] overflow-y-auto px-4 py-12 custom-scrollbar">
       <div className="max-w-[1140px] mx-auto space-y-12">
-        
+
         {/* CABEÇALHO */}
         <div className="text-center space-y-3 max-w-xl mx-auto">
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight sm:text-4xl">
@@ -100,7 +91,7 @@ export const PricingView: React.FC = () => {
 
         {/* CONTAINER DOS CARDS REFACTORADOS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch pt-4">
-          
+
           {/* DECO DE DEGUSTAÇÃO (FREE) */}
           <PricingCard
             name="free"
@@ -110,7 +101,7 @@ export const PricingView: React.FC = () => {
             price="0"
             aspect="Grátis para sempre"
             buttonText="Plano Atual"
-            isCurrent={!user?.plan || user?.plan?.id === 'free'} 
+            isCurrent={!user?.plan || user?.plan?.id === 'free'}
             icon={<Shield className="w-[18px] h-[18px]" />}
             features={[
               { text: '10 buscas no Radar por mês', included: true },
@@ -118,7 +109,7 @@ export const PricingView: React.FC = () => {
               { text: 'Importação de Planilha', included: false },
               { text: 'Exportação (Excel/CSV)', included: false },
             ]}
-            onSelect={() => {}}
+            onSelect={() => { }}
           />
 
           {/* PLANO STARTER */}
@@ -178,7 +169,15 @@ export const PricingView: React.FC = () => {
       <BillingFormModal
         isOpen={showFormModal}
         isLoading={loadingPlan !== null}
-        initialName={user?.displayName || ''}
+        initialData={user ? {
+          name: user.name,
+          cpfCnpj: user.cpfCnpj,
+          mobilePhone: user.mobilePhone,
+          postalCode: user.postalCode,
+          address: user.address,
+          addressNumber: user.addressNumber,
+          province: user.province,
+        } : undefined}
         planName={selectedPlanKey ? planNamesMapping[selectedPlanKey] : ''}
         error={formError}
         onClose={() => setShowFormModal(false)}
