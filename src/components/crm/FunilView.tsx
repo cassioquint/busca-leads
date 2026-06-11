@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { Lead, Tag } from '@/types';
 import { Loader2 } from 'lucide-react';
+import confetti from 'canvas-confetti';
 import { AddLeadModal, AddColumnModal, FunilColumn, FunilHeader } from './';
 import { ConfirmDeleteModal } from '@/components/common/ConfirmDeleteModal';
 import { ManageTagsModal } from './ManageTagsModal';
@@ -61,6 +62,22 @@ export const FunilView: React.FC<FunilViewProps> = ({
 
   const savedLeads = leads.filter(l => l.isSaved);
 
+  // Hook para soltar confetes
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    if (urlParams.get('status') === 'success') {
+      confetti({
+        particleCount: 150,
+        spread: 80,
+        origin: { y: 0.6 }
+      });
+
+      const urlLimpa = window.location.pathname;
+      window.history.replaceState({}, document.title, urlLimpa);
+    }
+  }, []);
+
   const handleOpenCreateColumn = () => {
     setActiveColumn(null);
     setIsEditColumnMode(false);
@@ -102,7 +119,6 @@ export const FunilView: React.FC<FunilViewProps> = ({
   return (
     <div className="flex-1 h-full flex flex-col overflow-hidden p-6 space-y-6">
 
-      {/* CABEÇALHO DO FUNIL FRAGMENTADO EM SUBCOMPONENTE */}
       <FunilHeader
         savedLeads={savedLeads}
         buckets={buckets}
