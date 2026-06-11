@@ -7,15 +7,15 @@ export interface CheckoutPayload {
   billingType?: 'CREDIT_CARD' | 'PIX' | 'UNDEFINED';
 
   // Dados cadastrais e fiscais do comprador
-  name: string;
-  cpfCnpj: string;
-  mobilePhone: string;
+  name?: string;
+  cpfCnpj?: string;
+  mobilePhone?: string;
 
   // Dados geográficos obrigatórios para a assinatura/NFS-e
-  postalCode: string;
-  address: string;
-  addressNumber: string;
-  province: string;
+  postalCode?: string;
+  address?: string;
+  addressNumber?: string;
+  province?: string;
 }
 
 export interface PaymentResponse {

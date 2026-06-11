@@ -79,7 +79,8 @@ export const LimitModal: React.FC<LimitModalProps> = ({ onGoToPricing }) => {
         }
         
         const response = await userApi.initializeCheckout(token, {
-          billingType: 'UNDEFINED' // Deixa ele escolher PIX ou Cartão direto no portal do Asaas
+          planKey: 'pro',
+          billingType: 'UNDEFINED'
         });
 
         if (response.url) {
