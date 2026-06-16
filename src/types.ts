@@ -1,6 +1,6 @@
 export interface Lead {
   id: string;
-  title: string;
+  name: string;
   type: string;
   city: string;
   address: string;

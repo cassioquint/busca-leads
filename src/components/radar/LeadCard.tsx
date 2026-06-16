@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Bookmark, Check, Camera } from 'lucide-react';
+import { Star, Bookmark, Check } from 'lucide-react';
 import type { Lead } from '@/types';
 
 interface LeadCardProps {
@@ -12,16 +12,23 @@ export const LeadCard: React.FC<LeadCardProps> = ({ lead, onSave }) => {
     <div className="bg-white rounded-xl border border-slate-200/90 p-3 shadow-sm hover:border-slate-300 transition-all flex gap-3 relative">
       
       {/* MINIATURA QUADRADA À ESQUERDA */}
-      <div className="w-14 h-14 bg-slate-100 rounded-lg overflow-hidden shrink-0 border border-slate-100">
-        <img
-          src={lead.thumbnail}
-          alt={lead.title}
-          className="w-full h-full object-cover"
-          referrerPolicy="no-referrer"
-          onError={(e) => {
-            e.currentTarget.src = 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=150&h=150&q=80';
-          }}
-        />
+      <div className="w-14 h-14 bg-indigo-50 rounded-lg overflow-hidden shrink-0 border border-indigo-100 flex items-center justify-center">
+        {lead.thumbnail ? (
+          <img
+            src={lead.thumbnail}
+            alt={lead.name}
+            className="w-full h-full object-cover bg-white p-1"
+            referrerPolicy="no-referrer"
+            onError={(e) => {
+              // Se a URL do logo falhar, exibe um placeholder limpo
+              e.currentTarget.src = 'https://placehold.co/150x150/e2e8f0/64748b?text=Logo+Off';
+            }}
+          />
+        ) : (
+          <span className="text-2xl font-black text-indigo-400 uppercase">
+            {lead.name ? lead.name.charAt(0) : '?'}
+          </span>
+        )}
       </div>
 
       {/* BLOCO DE TEXTOS E INFORMAÇÕES */}
@@ -30,8 +37,8 @@ export const LeadCard: React.FC<LeadCardProps> = ({ lead, onSave }) => {
         {/* TÍTULO E SEGMENTO */}
         <div className="space-y-0.5">
           <div className="flex items-start justify-between gap-1">
-            <h4 className="font-bold text-slate-900 text-xs leading-snug truncate pr-1 flex-1" title={lead.title}>
-              {lead.title}
+            <h4 className="font-bold text-slate-900 text-xs leading-snug truncate pr-1 flex-1" title={lead.name}>
+              {lead.name}
             </h4>
             
             {/* Avaliação Estrelas Compacta */}
@@ -48,10 +55,15 @@ export const LeadCard: React.FC<LeadCardProps> = ({ lead, onSave }) => {
               {lead.type}
             </span>
             {lead.instagram && (
-              <div className="flex items-center gap-0.5 text-pink-600 text-[10px] font-bold">
-                <Camera className="w-3 h-3" />
-                <span className="max-w-[70px] truncate">{lead.instagram}</span>
-              </div>
+              <a 
+                href={lead.instagram.startsWith('http') ? lead.instagram : `https://${lead.instagram}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center w-5 h-5 bg-pink-50 text-pink-500 hover:bg-pink-100 hover:text-pink-600 rounded border border-pink-100 transition-colors cursor-pointer"
+                title="Ver Instagram"
+              >
+               <img src="/instagram.svg" alt="Instagram" className="w-3 h-3" />
+              </a>
             )}
           </div>
         </div>
@@ -89,7 +101,6 @@ export const LeadCard: React.FC<LeadCardProps> = ({ lead, onSave }) => {
             )}
           </button>
         </div>
-
       </div>
     </div>
   );

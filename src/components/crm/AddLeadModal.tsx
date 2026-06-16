@@ -5,7 +5,7 @@ import type { Lead } from '@/types';
 interface AddLeadModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: { name: string; type: string; phone: string; address: string; notes: string }) => void;
   initialLead?: Lead | null;
   isEditMode?: boolean;
 }
@@ -18,7 +18,7 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
   isEditMode = false
 }) => {
   const [formData, setFormData] = useState({
-    title: '',
+    name: '',
     type: '',
     phone: '',
     address: '',
@@ -29,18 +29,19 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       if (isEditMode && initialLead) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setFormData({
-          title: initialLead.title || '',
+          name: initialLead.name || '',
           type: initialLead.type || '',
           phone: initialLead.phone || '',
           address: initialLead.address || '',
           notes: initialLead.notes || ''
         });
       } else {
-        setFormData({ title: '', type: '', phone: '', address: '', notes: '' });
+        setFormData({ name: '', type: '', phone: '', address: '', notes: '' });
       }
     } else {
-      setFormData({ title: '', type: '', phone: '', address: '', notes: '' });
+      setFormData({ name: '', type: '', phone: '', address: '', notes: '' });
     }
   }, [isOpen, isEditMode, initialLead]);
 
@@ -49,7 +50,7 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, '');
     if (value.length <= 2) {
-      value = value;
+      // Não faz nada, apenas mantém o valor digitado
     } else if (value.length <= 6) {
       value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
     } else if (value.length <= 10) {
@@ -110,8 +111,8 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
               <input 
                 required
                 disabled={isEditMode}
-                value={formData.title}
-                onChange={(e) => setFormData({...formData, title: e.target.value})}
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
                 placeholder="Ex: Padaria do João"
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-indigo-500 disabled:opacity-75 disabled:bg-slate-100/50 disabled:cursor-not-allowed transition-all"
               />

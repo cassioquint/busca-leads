@@ -15,7 +15,7 @@ export const exportLeadsToExcel = (leads: Lead[], buckets: Bucket[], tags: Tag[]
     const currentTag = tags.find((t) => t.id === lead.tagId);
 
     return {
-      'Empresa / Nome': lead.title || 'Sem Nome',
+      'Empresa / Nome': lead.name || 'Sem Nome',
       'Telefone': lead.phone || 'Sem Telefone',
       'Segmento / Tipo': lead.type || 'Não Definido',
       'Coluna no Funil': currentColumn ? currentColumn.name : 'Desconhecido',

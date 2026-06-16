@@ -17,7 +17,13 @@ interface FunilViewProps {
   tags: Tag[];
   isLoading?: boolean;
   onMoveLead: (id: string, direction: 'forward' | 'backward') => void;
-  onAddManualLead: (data: { title: string; phone: string; notes?: string }) => void;
+  onAddManualLead: (data: {
+    name: string;
+    phone: string;
+    type: string;
+    address: string;
+    notes?: string
+  }) => void;
   onCreateColumn: (name: string) => void;
   onCreateTag: (name: string, color: string) => Promise<void>;
   onUpdateTag: (id: string, name: string, color: string) => Promise<void>;

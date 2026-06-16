@@ -56,7 +56,7 @@ export const FunilCard: React.FC<FunilCardProps> = ({
     return `https://wa.me/${numbers}?text=${encodeURIComponent(text)}`;
   };
 
-  const waLink = getWhatsAppLink(lead.phone, lead.title);
+  const waLink = getWhatsAppLink(lead.phone, lead.name);
   const hasValidPhone = waLink !== '';
 
   return (
@@ -77,7 +77,7 @@ export const FunilCard: React.FC<FunilCardProps> = ({
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1 flex-1">
           <h5 className="font-bold text-sm text-slate-900 leading-tight">
-            {lead.title}
+            {lead.name}
           </h5>
           <span className="inline-block bg-slate-50 text-slate-500 text-[10px] font-bold px-1.5 py-0.5 rounded capitalize">
             {lead.type}

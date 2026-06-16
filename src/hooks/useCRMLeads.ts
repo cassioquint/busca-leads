@@ -90,7 +90,7 @@ export const useCRMLeads = ({
 
     const optimisticLead: Lead = {
       id: tempId,
-      title: leadData.title,
+      name: leadData.name,
       type: leadData.type || 'Não informado',
       phone: leadData.phone || 'Sem Telefone',
       address: leadData.address || 'Sem endereço',

@@ -120,11 +120,11 @@ function App() {
               tags={tags}
               onMoveLead={handleMoveLead}
               onAddManualLead={(data) => handleAddManualLead({
-                title: data.title,
-                phone: data.phone,
+                name: data.name,
+                phone: data.phone || 'Sem telefone',
                 notes: data.notes || '',
-                type: 'Não informado',
-                address: 'Sem endereço',
+                type: data.type || 'Não informado',
+                address: data.address || 'Sem endereço',
                 city: 'Cadastro Manual',
                 openState: 'Adicionado Manualmente',
                 isOpen: true,
