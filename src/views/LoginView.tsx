@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Lock, Target, User } from 'lucide-react';
+import { Mail, Lock, User } from 'lucide-react';
 import { 
   signInWithPopup, 
   signInWithEmailAndPassword, 
@@ -74,10 +74,14 @@ export const LoginView: React.FC = () => {
 
       <div className="flex flex-col items-center gap-1 mb-8 relative z-10">
         <div className="flex items-center gap-2">
-          <div className="bg-indigo-600 p-2 rounded-xl shadow-sm shadow-indigo-200">
-            <Target className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 flex items-center justify-center transition-transform group-hover:scale-105">
+            <img 
+              src="/favicon.svg" 
+              alt="Locus Logo" 
+              className="w-full h-full object-contain"
+            />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">BuscaLeads</h1>
+          <h1 className="text-2xl font-bold text-[#073c59] tracking-tight">Locus</h1>
         </div>
         <p className="text-xs text-slate-500 font-medium">Radar de prospecção · CRM</p>
       </div>
@@ -85,7 +89,7 @@ export const LoginView: React.FC = () => {
       <div className="w-full max-w-[440px] bg-white rounded-3xl border border-slate-200/80 p-8 shadow-xl shadow-slate-200/40 relative z-10">
         
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">
+          <h2 className="text-2xl font-bold text-[#073c59] mb-2">
             {isRegistering ? 'Criar nova conta' : 'Entrar na sua conta'}
           </h2>
           <p className="text-sm text-slate-500">

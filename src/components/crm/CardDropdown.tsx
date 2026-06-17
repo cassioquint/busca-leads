@@ -179,7 +179,7 @@ export const CardDropdown: React.FC<CardDropdownProps> = ({
           onClose={() => setShowDeleteModal(false)}
           onConfirm={handleConfirmDelete}
           title="Excluir este Lead?"
-          description={lead.title}
+          description={lead.name}
         />
       )}
     </div>

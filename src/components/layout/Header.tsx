@@ -1,5 +1,5 @@
 import React from 'react';
-import { Radar, LogOut, User as UserIcon, CreditCard, Search } from 'lucide-react';
+import { LogOut, User as UserIcon, CreditCard, Search } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 interface HeaderProps {
@@ -29,11 +29,15 @@ export const Header: React.FC<HeaderProps> = ({ onProfileClick, onLogoClick, onP
           onClick={onLogoClick}
           className="flex items-center gap-3 text-left focus:outline-none cursor-pointer group"
         >
-          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-indigo-200 group-hover:bg-indigo-700 transition-colors">
-            <Radar className="w-5 h-5" />
+          <div className="w-10 h-10 flex items-center justify-center transition-transform group-hover:scale-105">
+            <img 
+              src="/favicon.svg" 
+              alt="Locus Logo" 
+              className="w-full h-full object-contain"
+            />
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-900 leading-tight group-hover:text-indigo-600 transition-colors">BuscaLeads</h1>
+            <h1 className="text-xl font-bold tracking-tight leading-tight text-[#073c59] group-hover:text-indigo-600 transition-colors">Locus</h1>
             <p className="text-xs text-slate-500 font-medium">Radar de prospecção · CRM</p>
           </div>
         </button>

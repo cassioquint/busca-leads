@@ -79,7 +79,7 @@ export const FunilHeader: React.FC<FunilHeaderProps> = ({
   return (
     <div className="flex items-center justify-between shrink-0">
       <div>
-        <h2 className="text-2xl font-bold text-slate-900">Funil de Vendas</h2>
+        <h2 className="text-2xl font-bold text-[#073c59]">Funil de Vendas</h2>
         <p className="text-sm text-slate-500">
           {isLoading ? 'Buscando seu pipeline...' : `${savedLeads.length} leads no pipeline`}
         </p>
