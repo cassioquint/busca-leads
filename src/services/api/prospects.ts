@@ -35,7 +35,7 @@ export const prospectApi = {
 
       if (response.status === 429) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Limite de buscas atingido.');
+        throw new Error(errorData.code || 'Limite de buscas atingido.');
       }
 
       throw new Error('Falha ao buscar os prospects na API');
