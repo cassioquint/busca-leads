@@ -10,9 +10,10 @@ interface RadarResultsProps {
   setHideSavedLeads: (value: boolean) => void;
   pagination: { hasMore: boolean; nextStart: number };
   isLoadingMore: boolean;
-  animationParent: React.Ref<any>;
+  animationParent: React.Ref<HTMLDivElement>;
   onSave: (id: string) => void;
   onLoadMore: () => void;
+  searchLabel: string;
 }
 
 export const RadarResults: React.FC<RadarResultsProps> = ({
@@ -24,7 +25,8 @@ export const RadarResults: React.FC<RadarResultsProps> = ({
   isLoadingMore,
   animationParent,
   onSave,
-  onLoadMore
+  onLoadMore,
+  searchLabel
 }) => {
   return (
     <div className="space-y-4">
@@ -33,7 +35,7 @@ export const RadarResults: React.FC<RadarResultsProps> = ({
       <div className="flex flex-col gap-2.5 pb-2">
         <div>
           <h3 className="text-sm font-bold text-slate-900 leading-tight">
-            {activeSubTab === 'maps' ? 'Estabelecimentos no Radar' : 'Negócios Recém-Abertos'}
+            {searchLabel ? searchLabel : (activeSubTab === 'maps' ? 'Estabelecimentos no Radar' : 'Negócios Recém-Abertos')}
           </h3>
           <p className="text-[11px] text-slate-400 mt-0.5">{filteredLeads.length} leads exibidos</p>
         </div>

@@ -9,6 +9,7 @@ import { PricingView } from './PricingView';
 import { useCRM } from '@/hooks/useCRM';
 import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/services/api';
+import type { Lead } from '@/types';
 
 function App() {
   // Controla o estado de visualização de telas do app
@@ -22,10 +23,6 @@ function App() {
   // Desestrutura as propriedades dinâmicas do Kanban vindas do hook especialista
   const {
     isLoadingCRM,
-    radarLeads,
-    setRadarLeads,
-    hasSearched,
-    setHasSearched,
     funilLeads,
     handleSaveLead,
     handleMoveLead,
@@ -44,6 +41,16 @@ function App() {
     handleUpdateLeadNotes,
     handleImportLeadsInBulk,
   } = useCRM();
+
+  const [radarLeads, setRadarLeads] = useState<Lead[]>(() => {
+    const cache = localStorage.getItem('locus_last_search_results');
+    return cache ? JSON.parse(cache) : [];
+  });
+
+  const [hasSearched, setHasSearched] = useState<boolean>(() => {
+    const cache = localStorage.getItem('locus_has_searched');
+    return cache === 'true';
+  });
 
   // Estratégia de Pre-fetching: Acorda o servidor em nuvem usando a nossa chamada estruturada
   useEffect(() => {

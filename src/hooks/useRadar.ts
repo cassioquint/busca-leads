@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { api } from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
 import type { Lead } from '@/types';
+import { formatSearchLabel } from '@/utils/stringUtils';
 
 export const useRadar = (
   leads: Lead[],
@@ -9,17 +10,41 @@ export const useRadar = (
   setHasSearched: (value: boolean) => void,
   onSaveLead: (id: string) => void
 ) => {
-  const [activeSubTab, setActiveSubTab] = useState<'maps' | 'inauguracoes'>('maps');
-  const [hideSavedLeads, setHideSavedLeads] = useState(true);
+  // 1. Inicialização puxando os dados do cache do navegador (LocalStorage)
+  const [activeSubTab, setActiveSubTab] = useState<'maps' | 'inauguracoes'>(() => {
+    return (localStorage.getItem('locus_active_tab') as 'maps' | 'inauguracoes') || 'maps';
+  });
+
+  const [hideSavedLeads, setHideSavedLeads] = useState(() => {
+    const cache = localStorage.getItem('locus_hide_saved');
+    return cache ? JSON.parse(cache) : true;
+  });
+
+  const [pagination, setPagination] = useState(() => {
+    const cache = localStorage.getItem('locus_pagination');
+    return cache ? JSON.parse(cache) : { hasMore: false, nextStart: 20 };
+  });
+
+  const [lastSearchParams, setLastSearchParams] = useState(() => {
+    const cache = localStorage.getItem('locus_last_search_params');
+    return cache ? JSON.parse(cache) : { query: '', city: '' };
+  });
+
+  const [lastSearchLabel, setLastSearchLabel] = useState<string>(() => {
+    return localStorage.getItem('locus_last_search_label') || '';
+  });
+
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [pagination, setPagination] = useState({ hasMore: false, nextStart: 20 });
-  const [lastSearchParams, setLastSearchParams] = useState({ query: '', city: '' });
-
-  // 🌟 Atualizado: Consome a nova assinatura estruturada por enums do contexto
   const { setLimitModalType } = useAuth();
+
+  // 2. Efeitos para gravar no LocalStorage automaticamente quando os estados internos mudarem
+  useEffect(() => localStorage.setItem('locus_active_tab', activeSubTab), [activeSubTab]);
+  useEffect(() => localStorage.setItem('locus_hide_saved', JSON.stringify(hideSavedLeads)), [hideSavedLeads]);
+  useEffect(() => localStorage.setItem('locus_pagination', JSON.stringify(pagination)), [pagination]);
+  useEffect(() => localStorage.setItem('locus_last_search_params', JSON.stringify(lastSearchParams)), [lastSearchParams]);
 
   const handleSearch = async (query: string, city: string) => {
     const cleanCity = city.split(' - ')[0].trim();
@@ -33,15 +58,22 @@ export const useRadar = (
     try {
       const data = await api.searchLeads(query, cleanCity, undefined, 0);
       
-      setLeads(data.results);
+      setLeads(data.results);  
       setPagination({
         hasMore: data.pagination.hasMore,
         nextStart: data.pagination.nextStart
       });
+
+      localStorage.setItem('locus_last_search_results', JSON.stringify(data.results));
+      localStorage.setItem('locus_has_searched', 'true');
+
+      const label = formatSearchLabel(query, cleanCity);
+      setLastSearchLabel(label);
+      localStorage.setItem('locus_last_search_label', label);
+
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Falha desconhecida';
       
-      // 🌟 Validação Limpa por Enum: Se o serviço devolveu o código de limite de buscas
       if (errorMessage === 'SEARCHES_LIMIT' || (err as { status?: number }).status === 429) {
         setLimitModalType('SEARCHES_LIMIT');
       } else {
@@ -61,7 +93,13 @@ export const useRadar = (
 
     try {
       const data = await api.searchLeads(query, city, undefined, pagination.nextStart);
-      setLeads(prev => [...prev, ...data.results]);
+
+      setLeads(prev => {
+        const updatedLeads = [...prev, ...data.results];
+        localStorage.setItem('locus_last_search_results', JSON.stringify(updatedLeads));
+        return updatedLeads;
+      });
+
       setPagination({
         hasMore: data.pagination.hasMore,
         nextStart: data.pagination.nextStart
@@ -99,6 +137,8 @@ export const useRadar = (
     pagination,
     handleSearch,
     handleLoadMore,
-    handleSave
+    handleSave,
+    lastSearchParams,
+    lastSearchLabel
   };
 };

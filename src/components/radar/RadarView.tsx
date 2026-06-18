@@ -40,7 +40,8 @@ export const RadarView: React.FC<RadarViewProps> = ({
     pagination,
     handleSearch,
     handleLoadMore,
-    handleSave
+    handleSave,
+    lastSearchLabel
   } = useRadar(leads, setLeads, setHasSearched, onSaveLead);
 
   // 🌟 3. Intercepta a busca: executa a prospecção e atualiza a cota do plano logo em seguida
@@ -74,7 +75,7 @@ export const RadarView: React.FC<RadarViewProps> = ({
         {/* 1. TOPO FIXO: Sombra projetada estritamente para baixo */}
         <div className="shrink-0 px-5 pt-5 pb-4 bg-white shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05),0_2px_4px_-1px_rgba(0,0,0,0.03)] relative z-30">
           <SearchBar
-            onSearch={handleSearchWithUsageUpdate} // 🌟 4. Substituído pelo gatilho atualizado com refresh
+            onSearch={handleSearchWithUsageUpdate}
             activeSubTab={activeSubTab}
             setActiveSubTab={setActiveSubTab}
           />
@@ -108,6 +109,7 @@ export const RadarView: React.FC<RadarViewProps> = ({
               animationParent={animationParent}
               onSave={handleSave}
               onLoadMore={handleLoadMore}
+              searchLabel={lastSearchLabel}
             />
           )}
 
