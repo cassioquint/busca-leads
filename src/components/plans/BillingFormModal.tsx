@@ -189,7 +189,7 @@ export const BillingFormModal: React.FC<BillingFormModalProps> = ({
 
           <div className="pt-2 flex items-center gap-1.5 justify-center text-[10px] text-slate-400 font-medium">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-            <span>Processamento fiscal emitido via Asaas Sandbox.</span>
+            <span>Processamento fiscal emitido via Asaas.</span>
           </div>
 
           <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
