@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Clock, Trash2, Calendar, Tag, Plus } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { Clock, Trash2, Calendar, Tag } from 'lucide-react';
 import { ConfirmDeleteModal } from '@/components/common/ConfirmDeleteModal';
 import type { Lead, Tag as TagType } from '@/types';
 
@@ -27,16 +28,15 @@ export const CardDropdown: React.FC<CardDropdownProps> = ({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Captura o clique e calcula a posição geográfica exata do botão na viewport
   const handleToggleMenu = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
 
-      // Abre o menu colado abaixo do botão, alinhado à direita dele (com margem de segurança)
+      // 🌟 NOVA MATEMÁTICA: Alinhado no topo do botão, abrindo para a direita (+8px de respiro)
       setMenuCoords({
-        top: rect.bottom + window.scrollY + 6,
-        left: rect.right - 200 // 200px é a largura (w-50) do nosso menu
+        top: rect.top, 
+        left: rect.right + 8 
       });
     }
     setShowMenu(!showMenu);
@@ -44,6 +44,7 @@ export const CardDropdown: React.FC<CardDropdownProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      // Como estamos usando Portal, a ref continua funcionando perfeitamente
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setShowMenu(false);
       }
@@ -59,13 +60,11 @@ export const CardDropdown: React.FC<CardDropdownProps> = ({
     setShowMenu(false);
   };
 
-  // 🌟 FIX: Declarada a função de confirmação que estava faltando no escopo!
   const handleConfirmDelete = () => {
     onDeleteLead(lead.id);
     setShowDeleteModal(false);
   };
 
-  // 🌟 FIX: Tipagem do parâmetro ajustada para aceitar string, null ou undefined e evitar conflitos
   const getInputValue = (dateStr: string | null | undefined) => {
     if (!dateStr) return '';
     const parts = dateStr.split('/');
@@ -91,14 +90,13 @@ export const CardDropdown: React.FC<CardDropdownProps> = ({
         type="button"
         onClick={handleToggleMenu}
         className="p-1 text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 rounded-md transition-all opacity-0 group-hover/card:opacity-100 focus:opacity-100 cursor-pointer block"
-        style={{ opacity: showMenu ? 1 : undefined }}
         title="Ações do lead"
       >
         <span className="text-base font-bold tracking-widest leading-none block -mt-1">...</span>
       </button>
 
-      {/* RENDERIZAÇÃO COM MENU FIXED (Tema Claro) */}
-      {showMenu && (
+      {/* 🌟 MAGIA DO PORTAL: Joga o menu direto no body da página, escapando da coluna */}
+      {showMenu && createPortal(
         <div
           ref={menuRef}
           style={{
@@ -109,14 +107,6 @@ export const CardDropdown: React.FC<CardDropdownProps> = ({
           className="z-[9999] w-50 bg-white border border-slate-200/80 rounded-xl shadow-2xl p-1.5 animate-in fade-in zoom-in-95 duration-100 text-left space-y-0.5"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Opção: Adicionar ao Dia */}
-          <button
-            type="button"
-            className="w-full text-left text-xs text-slate-600 hover:bg-slate-50 hover:text-indigo-600 font-semibold px-2.5 py-2 rounded-lg transition-all flex items-center gap-2.5 cursor-pointer"
-          >
-            <Plus className="w-4 h-4 text-slate-400 group-hover:text-indigo-500" />
-            <span>Adicionar ao Meu Dia</span>
-          </button>
 
           {/* Seção: Rótulos Integrada */}
           <div className="px-2.5 py-1.5 space-y-1">
@@ -169,7 +159,8 @@ export const CardDropdown: React.FC<CardDropdownProps> = ({
             <Trash2 className="w-4 h-4 text-red-500" />
             <span>Excluir</span>
           </button>
-        </div>
+        </div>,
+        document.body // Alvo do Portal
       )}
 
       {/* MODAL DE DELEÇÃO */}

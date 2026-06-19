@@ -113,9 +113,13 @@ export const useRadar = (
   };
 
   const handleSave = (id: string) => {
-    setLeads(currentLeads =>
-      currentLeads.map(lead => (lead.id === id ? { ...lead, isSaved: true } : lead))
-    );
+    setLeads(currentLeads => {
+      const updatedLeads = currentLeads.map(lead => (lead.id === id ? { ...lead, isSaved: true } : lead));
+      
+      localStorage.setItem('locus_last_search_results', JSON.stringify(updatedLeads));
+      
+      return updatedLeads;
+    });
     onSaveLead(id);
   };
 

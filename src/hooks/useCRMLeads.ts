@@ -15,15 +15,12 @@ interface UseCRMLeadsProps {
 
 export const useCRMLeads = ({
   userEmail,
-  radarLeads,
-  setRadarLeads,
   funilLeads,
   setFunilLeads,
   buckets,
   tags
 }: UseCRMLeadsProps) => {
   const bucketsRef = useRef<Bucket[]>(buckets);
-
   const { setLimitModalType, user } = useAuth();
 
   useEffect(() => {
@@ -35,22 +32,43 @@ export const useCRMLeads = ({
     if (!userEmail || currentBuckets.length === 0) return;
     const firstBucketId = currentBuckets[0].id;
 
-    setRadarLeads(prev => prev.map(l => l.id === id ? { ...l, isSaved: true } : l));
+    const cache = localStorage.getItem('locus_last_search_results');
+    const actualRadarLeads: Lead[] = cache ? JSON.parse(cache) : [];
+    const leadToSave = actualRadarLeads.find(l => l.id === id);
 
-    const leadToSave = radarLeads.find(l => l.id === id);
-    if (leadToSave && !funilLeads.some(l => l.googlePlaceId === id || l.id === id)) {
-      setFunilLeads(prev => [...prev, { ...leadToSave, isSaved: true, bucketId: firstBucketId }]);
+    // 2. Atualização Otimista (Faz o card pular para o Kanban sem esperar o banco)
+    if (leadToSave) {
+      setFunilLeads(prev => {
+        if (prev.some(l => l.googlePlaceId === id || l.id === id)) return prev;
+        return [...prev, { ...leadToSave, isSaved: true, bucketId: firstBucketId }];
+      });
     }
 
     try {
+      // 3. Salva no banco de dados
       const savedLeadFromDB = await api.saveLeadToFunil(id, userEmail);
-      setFunilLeads(prev => prev.map(l => l.id === id ? savedLeadFromDB : l));
+      
+      // 4. Troca o lead otimista provisório pelo lead oficial com ID do banco
+      setFunilLeads(prev => {
+        const leadExists = prev.some(l => l.id === id || l.googlePlaceId === id);
+        if (leadExists) {
+          return prev.map(l => (l.id === id || l.googlePlaceId === id) ? savedLeadFromDB : l);
+        } else {
+          return [...prev, savedLeadFromDB];
+        }
+      });
+
     } catch (error: unknown) {
       console.error(error);
       
-      // Reverte o estado otimista em tela se der erro
-      setRadarLeads(prev => prev.map(l => l.id === id ? { ...l, isSaved: false } : l));
-      setFunilLeads(prev => prev.filter(l => l.id !== id));
+      const revertedCache = localStorage.getItem('locus_last_search_results');
+      if (revertedCache) {
+        const revertedRadar: Lead[] = JSON.parse(revertedCache);
+        const fixedRadar = revertedRadar.map(l => l.id === id ? { ...l, isSaved: false } : l);
+        localStorage.setItem('locus_last_search_results', JSON.stringify(fixedRadar));
+      }
+
+      setFunilLeads(prev => prev.filter(l => l.id !== id && l.googlePlaceId !== id));
 
       if (error instanceof Error && error.message === 'FUNNEL_LIMIT') {
         setLimitModalType('FUNNEL_LIMIT');
@@ -112,8 +130,6 @@ export const useCRMLeads = ({
       setFunilLeads(prev => prev.map(l => l.id === tempId ? savedLeadFromDB : l));
     } catch (error: unknown) {
       console.error(error);
-      
-      // Desfaz a criação otimista
       setFunilLeads(prev => prev.filter(l => l.id !== tempId));
 
       if (error instanceof Error && error.message === 'FUNNEL_LIMIT') {
@@ -161,8 +177,15 @@ export const useCRMLeads = ({
     const previousLeads = [...funilLeads];
 
     setFunilLeads(prev => prev.filter(l => l.id !== id));
+    
+    // 🌟 Libera o botão no cache do Radar se ele for excluído do funil
     if (leadToDelete?.googlePlaceId) {
-      setRadarLeads(prev => prev.map(p => p.id === leadToDelete.googlePlaceId ? { ...p, isSaved: false } : p));
+      const cache = localStorage.getItem('locus_last_search_results');
+      if (cache) {
+        const actualRadarLeads: Lead[] = JSON.parse(cache);
+        const updatedRadar = actualRadarLeads.map(p => p.id === leadToDelete.googlePlaceId ? { ...p, isSaved: false } : p);
+        localStorage.setItem('locus_last_search_results', JSON.stringify(updatedRadar));
+      }
     }
 
     try {
@@ -170,10 +193,17 @@ export const useCRMLeads = ({
     } catch (error) {
       console.error(error);
       setFunilLeads(previousLeads);
+      
+      // Reverte o cache se der erro na exclusão do banco
       if (leadToDelete?.googlePlaceId) {
-        setRadarLeads(prev => prev.map(p => p.id === leadToDelete.googlePlaceId ? { ...p, isSaved: true } : p));
+        const cache = localStorage.getItem('locus_last_search_results');
+        if (cache) {
+          const actualRadarLeads: Lead[] = JSON.parse(cache);
+          const revertedRadar = actualRadarLeads.map(p => p.id === leadToDelete.googlePlaceId ? { ...p, isSaved: true } : p);
+          localStorage.setItem('locus_last_search_results', JSON.stringify(revertedRadar));
+        }
       }
-      alert("Erro ao excluir the lead.");
+      alert("Erro ao excluir o lead.");
     }
   };
 
