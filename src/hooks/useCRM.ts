@@ -48,6 +48,7 @@ export const useCRM = () => {
     handleUpdateLeadNotes: leadsActions.handleUpdateLeadNotes,
     handleChangeLeadTag: leadsActions.handleChangeLeadTag,
     handleImportLeadsInBulk: leadsActions.handleImportLeadsInBulk,
+    handleUpdateLeadPitch: leadsActions.handleUpdateLeadPitch,
 
     // Ações de Configuração Estrutural
     handleCreateColumn: configActions.handleCreateColumn,

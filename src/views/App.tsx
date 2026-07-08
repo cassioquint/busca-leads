@@ -9,6 +9,8 @@ import { PricingView } from './PricingView';
 import { useCRM } from '@/hooks/useCRM';
 import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/services/api';
+// Se você separou o leadApi em outro arquivo, importe-o aqui. Ex:
+// import { leadApi } from '@/services/api/leads'; 
 import type { Lead } from '@/types';
 
 function App() {
@@ -40,6 +42,7 @@ function App() {
     handleDeleteLead,
     handleUpdateLeadNotes,
     handleImportLeadsInBulk,
+    handleUpdateLeadPitch
   } = useCRM();
 
   const [radarLeads, setRadarLeads] = useState<Lead[]>(() => {
@@ -149,6 +152,18 @@ function App() {
               onUpdateLeadNotes={handleUpdateLeadNotes}
               onImportLeadsInBulk={handleImportLeadsInBulk}
               isLoading={isLoadingCRM}
+              onGenerateAIPitch={async (id) => {
+                if (!user.email) throw new Error("Usuário não autenticado");
+                const pitch = await api.generateAIPitch(id, user.email);
+                handleUpdateLeadPitch(id, pitch);
+                return pitch;
+              }}
+              userEmail={user.email!}
+              onSaveAiConfig={async (data) => {
+                if (!user.email) throw new Error("Usuário não autenticado");
+                // Nota: Substitua 'api.' por 'leadApi.' caso sua nova rota esteja em outro objeto importado
+                await api.saveAiConfig(user.email, data);
+              }}
             />
           </>
         )}

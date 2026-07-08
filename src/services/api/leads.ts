@@ -1,12 +1,12 @@
 import { BASE_URL, getAuthHeaders } from './client';
-import type { Lead } from '@/types';
+import type { Lead, AiConfigData } from '@/types';
 
 /**
  * Função utilitária privada para tratar respostas de erro da API.
  * Evita repetição de código (DRY) ao extrair enums estruturados do backend.
  */
 async function handleApiError(response: Response, defaultMessage: string): Promise<never> {
-  // 🌟 CORREÇÃO: Tipagem segura substituindo o explicit 'any' por Record de chaves desconhecidas
+
   let errorData: Record<string, unknown> = {};
   
   // 1. Tenta extrair o JSON de erro do backend com segurança
@@ -61,7 +61,6 @@ export const leadApi = {
       body: JSON.stringify({ prospectId, user })
     });
     
-    // 🌟 Atualizado: Intercepta o erro de forma estruturada
     if (!response.ok) {
       await handleApiError(response, 'Falha ao salvar o lead no banco de dados');
     }
@@ -77,7 +76,6 @@ export const leadApi = {
       body: JSON.stringify({ ...leadData, user })
     });
 
-    // 🌟 Atualizado: Protege a criação manual contra estouro de cota
     if (!response.ok) {
       await handleApiError(response, 'Falha ao salvar o lead manual no banco');
     }
@@ -93,7 +91,6 @@ export const leadApi = {
       body: JSON.stringify({ leads, user })
     });
 
-    // 🌟 Atualizado: Protege a importação em lote contra falta de cota ou recurso bloqueado
     if (!response.ok) {
       await handleApiError(response, 'Falha ao realizar a importação em lote no servidor');
     }
@@ -127,7 +124,7 @@ export const leadApi = {
   },
 
   // Editar as observações/notas do Lead
-  async updateLeadNotes(id: string, payload: { notes?: string; phone?: string }, user: string) {
+  async updateLeadNotes(id: string, payload: { notes?: string; phone?: string; aiPitch?: string }, user: string) {
     const headers = await getAuthHeaders();
     
     const response = await fetch(`${BASE_URL}/funil/${id}`, {
@@ -136,6 +133,7 @@ export const leadApi = {
       body: JSON.stringify({ 
         notes: payload.notes,
         phone: payload.phone,
+        aiPitch: payload.aiPitch,
         user 
       })
     });
@@ -156,6 +154,61 @@ export const leadApi = {
     });
 
     if (!response.ok) throw new Error('Falha ao excluir o lead do servidor');
+    return response.json();
+  },
+
+  // Gerar abordagem de vendas com IA (Groq)
+  async generateAIPitch(id: string, user: string) {
+    const headers = await getAuthHeaders();
+    
+    const response = await fetch(`${BASE_URL}/leads/${id}/pitch`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ user })
+    });
+
+    if (!response.ok) {
+      await handleApiError(response, 'Falha ao gerar abordagem com a IA');
+    }
+    
+    const data = await response.json();
+    return data.pitch;
+  },
+
+  // Salvar configurações da IA
+  async saveAiConfig(user: string, configData: AiConfigData) {
+    const headers = await getAuthHeaders();
+    
+    const response = await fetch(`${BASE_URL}/ai-config`, {
+      method: 'PUT', // ou POST, dependendo de como você criar a rota no backend
+      headers,
+      body: JSON.stringify({ 
+        userEmail: user, 
+        ...configData 
+      })
+    });
+
+    if (!response.ok) {
+      await handleApiError(response, 'Falha ao salvar as configurações da IA no servidor');
+    }
+    
+    return response.json();
+  },
+
+  // Buscar configurações da IA do usuário
+  async getAiConfig(user: string) {
+    const headers = await getAuthHeaders();
+    
+    const response = await fetch(`${BASE_URL}/ai-config?user=${encodeURIComponent(user)}`, {
+      headers
+    });
+
+    if (!response.ok) {
+      // Se não encontrar (404), podemos retornar null para o frontend saber que está vazio
+      if (response.status === 404) return null;
+      await handleApiError(response, 'Falha ao carregar as configurações da IA');
+    }
+    
     return response.json();
   }
 };

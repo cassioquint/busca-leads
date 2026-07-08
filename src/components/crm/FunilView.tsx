@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import type { Lead, Tag } from '@/types';
+import type { Lead, Tag, AiConfigData } from '@/types';
+import { api } from '@/services/api';
 import { Loader2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { AddLeadModal, AddColumnModal, FunilColumn, FunilHeader } from './';
 import { ConfirmDeleteModal } from '@/components/common/ConfirmDeleteModal';
 import { ManageTagsModal } from './ManageTagsModal';
+import { AIConfigModal } from './AIConfigModal';
 
 interface Bucket {
   id: string;
@@ -16,6 +18,7 @@ interface FunilViewProps {
   buckets: Bucket[];
   tags: Tag[];
   isLoading?: boolean;
+  userEmail: string;
   onMoveLead: (id: string, direction: 'forward' | 'backward') => void;
   onAddManualLead: (data: {
     name: string;
@@ -30,11 +33,13 @@ interface FunilViewProps {
   onDeleteTag: (id: string) => Promise<void>;
   onChangeLeadTag: (leadId: string, tagId: string | null) => void;
   onDeleteLead: (id: string) => void;
-  onUpdateLeadNotes: (id: string, notes: string, phone: string) => void;
+  onUpdateLeadNotes: (id: string, notes: string, phone: string, aiPitch?: string) => void;
   onRenameColumn: (id: string, newName: string) => void;
   onDeleteColumn: (id: string) => void;
   onMoveColumn: (id: string, direction: 'left' | 'right') => void;
   onImportLeadsInBulk: (leads: Partial<Lead>[]) => Promise<void>;
+  onGenerateAIPitch?: (leadId: string) => Promise<string>;
+  onSaveAiConfig: (data: AiConfigData) => Promise<void>;
 }
 
 export const FunilView: React.FC<FunilViewProps> = ({
@@ -42,6 +47,7 @@ export const FunilView: React.FC<FunilViewProps> = ({
   buckets,
   tags,
   isLoading = false,
+  userEmail,
   onMoveLead,
   onAddManualLead,
   onCreateColumn,
@@ -54,7 +60,9 @@ export const FunilView: React.FC<FunilViewProps> = ({
   onRenameColumn,
   onDeleteColumn,
   onMoveColumn,
-  onImportLeadsInBulk
+  onImportLeadsInBulk,
+  onGenerateAIPitch,
+  onSaveAiConfig
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isColumnModalOpen, setIsColumnModalOpen] = useState(false);
@@ -66,12 +74,15 @@ export const FunilView: React.FC<FunilViewProps> = ({
 
   const [isTagsModalOpen, setIsTagsModalOpen] = useState(false);
 
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+  const [aiConfig, setAiConfig] = useState<AiConfigData | null>(null);
+
   const savedLeads = leads.filter(l => l.isSaved);
 
   // Hook para soltar confetes
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    
+
     if (urlParams.get('status') === 'success') {
       confetti({
         particleCount: 150,
@@ -83,6 +94,20 @@ export const FunilView: React.FC<FunilViewProps> = ({
       window.history.replaceState({}, document.title, urlLimpa);
     }
   }, []);
+
+  // 2. Hook de Busca de Dados (IA)
+  useEffect(() => {
+    const fetchConfig = async () => {
+      if (!userEmail) return;
+      try {
+        const config = await api.getAiConfig(userEmail);
+        if (config) setAiConfig(config);
+      } catch (error) {
+        console.error("Erro ao buscar configurações da IA", error);
+      }
+    };
+    fetchConfig();
+  }, [userEmail]);
 
   const handleOpenCreateColumn = () => {
     setActiveColumn(null);
@@ -134,6 +159,7 @@ export const FunilView: React.FC<FunilViewProps> = ({
         onManageTagsClick={() => setIsTagsModalOpen(true)}
         onNewColumnClick={handleOpenCreateColumn}
         onImportLeadsInBulk={onImportLeadsInBulk}
+        onManageAIConfigClick={() => setIsAIModalOpen(true)}
       />
 
       {/* CORE DE TELAS */}
@@ -188,9 +214,11 @@ export const FunilView: React.FC<FunilViewProps> = ({
         onClose={() => { setIsModalOpen(false); setEditingLead(null); }}
         initialLead={editingLead}
         isEditMode={!!editingLead}
+        onGenerateAIPitch={onGenerateAIPitch}
+        onOpenAIConfig={() => setIsAIModalOpen(true)}
         onSubmit={(data) => {
           if (editingLead) {
-            onUpdateLeadNotes(editingLead.id, data.notes, data.phone);
+            onUpdateLeadNotes(editingLead.id, data.notes, data.phone, data.aiPitch);
           } else {
             onAddManualLead(data);
           }
@@ -233,6 +261,17 @@ export const FunilView: React.FC<FunilViewProps> = ({
         onCreateTag={onCreateTag}
         onUpdateTag={onUpdateTag}
         onDeleteTag={onDeleteTag}
+      />
+
+      {/* MODAL DO CÉREBRO DA IA */}
+      <AIConfigModal
+        isOpen={isAIModalOpen}
+        onClose={() => setIsAIModalOpen(false)}
+        initialConfig={aiConfig}
+        onSave={async (data) => {
+          await onSaveAiConfig(data);
+          setAiConfig(data);
+        }}
       />
     </div>
   );

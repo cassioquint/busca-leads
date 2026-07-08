@@ -18,6 +18,9 @@ export const api = {
   updateLeadTag: leadApi.updateLeadTag,
   updateLeadNotes: leadApi.updateLeadNotes,
   deleteLead: leadApi.deleteLead,
+  generateAIPitch: leadApi.generateAIPitch,
+  saveAiConfig: leadApi.saveAiConfig,
+  getAiConfig: leadApi.getAiConfig,
 
   getBuckets: bucketApi.getBuckets,
   createBucket: bucketApi.createBucket,

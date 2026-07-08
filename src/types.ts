@@ -19,6 +19,7 @@ export interface Lead {
   tagId?: string | null;
   tag?: Tag | null;
   notes?: string;
+  aiPitch?: string | null;
 }
 
 export interface Bucket {
@@ -62,4 +63,11 @@ export interface ExtendedUser {
   addressNumber?: string;
   province?: string;
   getIdToken: (forceRefresh?: boolean) => Promise<string>;
+}
+
+export interface AiConfigData {
+  aiTone: string;
+  service: string;
+  pricing?: string;
+  generalRule?: string;
 }

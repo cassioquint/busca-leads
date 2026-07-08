@@ -47,7 +47,7 @@ export const useCRMLeads = ({
     try {
       // 3. Salva no banco de dados
       const savedLeadFromDB = await api.saveLeadToFunil(id, userEmail);
-      
+
       // 4. Troca o lead otimista provisório pelo lead oficial com ID do banco
       setFunilLeads(prev => {
         const leadExists = prev.some(l => l.id === id || l.googlePlaceId === id);
@@ -60,7 +60,7 @@ export const useCRMLeads = ({
 
     } catch (error: unknown) {
       console.error(error);
-      
+
       const revertedCache = localStorage.getItem('locus_last_search_results');
       if (revertedCache) {
         const revertedRadar: Lead[] = JSON.parse(revertedCache);
@@ -156,14 +156,14 @@ export const useCRMLeads = ({
     }
   };
 
-  const handleUpdateLeadNotes = async (id: string, notes?: string, phone?: string) => {
+  const handleUpdateLeadNotes = async (id: string, notes?: string, phone?: string, aiPitch?: string) => {
     if (!userEmail) return;
     const previousLeads = [...funilLeads];
 
-    setFunilLeads(prev => prev.map(l => l.id === id ? { ...l, notes, phone: phone ?? l.phone } : l));
+    setFunilLeads(prev => prev.map(l => l.id === id ? { ...l, notes, phone: phone ?? l.phone, aiPitch: aiPitch ?? l.aiPitch } : l));
 
     try {
-      await api.updateLeadNotes(id, { notes, phone }, userEmail);
+      await api.updateLeadNotes(id, { notes, phone, aiPitch }, userEmail);
     } catch (error) {
       console.error(error);
       setFunilLeads(previousLeads);
@@ -177,7 +177,7 @@ export const useCRMLeads = ({
     const previousLeads = [...funilLeads];
 
     setFunilLeads(prev => prev.filter(l => l.id !== id));
-    
+
     // 🌟 Libera o botão no cache do Radar se ele for excluído do funil
     if (leadToDelete?.googlePlaceId) {
       const cache = localStorage.getItem('locus_last_search_results');
@@ -193,7 +193,7 @@ export const useCRMLeads = ({
     } catch (error) {
       console.error(error);
       setFunilLeads(previousLeads);
-      
+
       // Reverte o cache se der erro na exclusão do banco
       if (leadToDelete?.googlePlaceId) {
         const cache = localStorage.getItem('locus_last_search_results');
@@ -214,20 +214,24 @@ export const useCRMLeads = ({
       setLimitModalType('FUNNEL_LIMIT');
       return;
     }
-    
+
     try {
       const savedLeadsFromServer = await api.importLeadsBulk(newLeads, userEmail);
       setFunilLeads(prev => [...prev, ...savedLeadsFromServer]);
       alert(`${savedLeadsFromServer.length} leads importados com sucesso!`);
     } catch (error: unknown) {
       console.error(error);
-      
+
       if (error instanceof Error && error.message === 'FUNNEL_LIMIT') {
         setLimitModalType('FUNNEL_LIMIT');
       } else {
         alert('Erro ao salvar os leads importados no servidor.');
       }
     }
+  };
+
+  const handleUpdateLeadPitch = (id: string, aiPitch: string) => {
+    setFunilLeads(prev => prev.map(l => l.id === id ? { ...l, aiPitch } : l));
   };
 
   return {
@@ -237,6 +241,7 @@ export const useCRMLeads = ({
     handleChangeLeadTag,
     handleUpdateLeadNotes,
     handleDeleteLead,
-    handleImportLeadsInBulk
+    handleImportLeadsInBulk,
+    handleUpdateLeadPitch
   };
 };

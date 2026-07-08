@@ -41,7 +41,9 @@ export const FunilCard: React.FC<FunilCardProps> = ({
   const isFirstColumn = currentColumnIndex === 0;
   const isLastColumn = currentColumnIndex === bucketIds.length - 1;
 
-  const getWhatsAppLink = (phone?: string, title?: string) => {
+  // 🌟 Atualizado para receber o aiPitch como parâmetro opcional
+  const getWhatsAppLink = (phone?: string, title?: string, aiPitch?: string | null) => {
+    console.log(aiPitch)
     if (!phone || phone === 'Sem Telefone') return '';
 
     let numbers = phone.replace(/\D/g, '');
@@ -51,12 +53,16 @@ export const FunilCard: React.FC<FunilCardProps> = ({
       numbers = `55${numbers}`;
     }
 
-    const text = `Olá, ${title}! Tudo bem? Encontrei o perfil de vocês e gostaria de conversar rapidamente.`;
+    // Define o texto: Prioriza a IA, usa o padrão caso a IA não tenha gerado nada
+    const text = aiPitch 
+      ? aiPitch 
+      : `Olá, ${title}! Tudo bem? Encontrei o perfil de vocês e gostaria de conversar rapidamente.`;
 
-    return `https://wa.me/${numbers}?text=${encodeURIComponent(text)}`;
+    return `https://api.whatsapp.com/send/?phone=${numbers}&text=${encodeURIComponent(text)}&type=phone_number&app_absent=0`;
   };
 
-  const waLink = getWhatsAppLink(lead.phone, lead.name);
+  // 🌟 Passamos o lead.aiPitch na chamada da função
+  const waLink = getWhatsAppLink(lead.phone, lead.name, lead.aiPitch);
   const hasValidPhone = waLink !== '';
 
   return (
@@ -130,7 +136,7 @@ export const FunilCard: React.FC<FunilCardProps> = ({
             href={waLink}
             target="_blank"
             rel="noreferrer"
-            title="Abordar via WhatsApp"
+            title={lead.aiPitch ? "Enviar Abordagem da IA via WhatsApp" : "Abordar via WhatsApp"}
             className="text-[#25D366] hover:text-[#1ebe57] hover:scale-110 transition-all cursor-pointer bg-[#25D366]/10 p-1.5 rounded-lg"
           >
             <WhatsAppIcon className="w-4 h-4" />
