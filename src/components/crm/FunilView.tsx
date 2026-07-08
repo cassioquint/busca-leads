@@ -39,6 +39,7 @@ interface FunilViewProps {
   onMoveColumn: (id: string, direction: 'left' | 'right') => void;
   onImportLeadsInBulk: (leads: Partial<Lead>[]) => Promise<void>;
   onGenerateAIPitch?: (leadId: string) => Promise<string>;
+  onGenerateAIReply?: (id: string, lastMessage: string, clientResponse: string) => Promise<string>;
   onSaveAiConfig: (data: AiConfigData) => Promise<void>;
 }
 
@@ -62,21 +63,18 @@ export const FunilView: React.FC<FunilViewProps> = ({
   onMoveColumn,
   onImportLeadsInBulk,
   onGenerateAIPitch,
+  onGenerateAIReply,
   onSaveAiConfig
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isColumnModalOpen, setIsColumnModalOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
-
   const [activeColumn, setActiveColumn] = useState<Bucket | null>(null);
   const [isEditColumnMode, setIsEditColumnMode] = useState(false);
   const [showDeleteColumnModal, setShowDeleteColumnModal] = useState(false);
-
   const [isTagsModalOpen, setIsTagsModalOpen] = useState(false);
-
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [aiConfig, setAiConfig] = useState<AiConfigData | null>(null);
-
   const savedLeads = leads.filter(l => l.isSaved);
 
   // Hook para soltar confetes
@@ -216,6 +214,7 @@ export const FunilView: React.FC<FunilViewProps> = ({
         initialLead={editingLead}
         isEditMode={!!editingLead}
         onGenerateAIPitch={onGenerateAIPitch}
+        onGenerateAIReply={onGenerateAIReply}
         onOpenAIConfig={() => setIsAIModalOpen(true)}
         onSubmit={(data) => {
           if (editingLead) {

@@ -210,5 +210,28 @@ export const leadApi = {
     }
     
     return response.json();
+  },
+
+  // Gerar tréplica com IA
+  async generateLeadReply(id: string, lastMessageSent: string, clientResponse: string, user: string) {
+    const headers = await getAuthHeaders();
+    console.log(clientResponse)
+    
+    const response = await fetch(`${BASE_URL}/leads/${id}/reply`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ 
+        lastMessageSent, 
+        clientResponse, 
+        user 
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('Falha ao conectar com o gerador de tréplica.');
+    }
+
+    const data = await response.json();
+    return data.reply;
   }
 };

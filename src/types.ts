@@ -71,3 +71,11 @@ export interface AiConfigData {
   pricing?: string;
   generalRule?: string;
 }
+
+export interface LeadFormData {
+  name: string; 
+  type: string; 
+  phone: string; 
+  address: string; 
+  notes: string;
+}

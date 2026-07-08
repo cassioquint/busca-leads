@@ -41,9 +41,7 @@ export const FunilCard: React.FC<FunilCardProps> = ({
   const isFirstColumn = currentColumnIndex === 0;
   const isLastColumn = currentColumnIndex === bucketIds.length - 1;
 
-  // 🌟 Atualizado para receber o aiPitch como parâmetro opcional
   const getWhatsAppLink = (phone?: string, title?: string, aiPitch?: string | null) => {
-    console.log(aiPitch)
     if (!phone || phone === 'Sem Telefone') return '';
 
     let numbers = phone.replace(/\D/g, '');

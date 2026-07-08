@@ -21,6 +21,7 @@ export const api = {
   generateAIPitch: leadApi.generateAIPitch,
   saveAiConfig: leadApi.saveAiConfig,
   getAiConfig: leadApi.getAiConfig,
+  generateLeadReply: leadApi.generateLeadReply,
 
   getBuckets: bucketApi.getBuckets,
   createBucket: bucketApi.createBucket,
