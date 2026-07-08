@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { X, Plus, Target, Phone, MapPin, Briefcase, FileText, Sparkles, Copy, Settings } from 'lucide-react';
 import type { Lead } from '@/types';
 
@@ -22,43 +22,16 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
   onOpenAIConfig
 }) => {
   const [formData, setFormData] = useState({
-    name: '',
-    type: '',
-    phone: '',
-    address: '',
-    notes: ''
+    name: isEditMode ? (initialLead?.name || '') : '',
+    type: isEditMode ? (initialLead?.type || '') : '',
+    phone: isEditMode ? (initialLead?.phone || '') : '',
+    address: isEditMode ? (initialLead?.address || '') : '',
+    notes: isEditMode ? (initialLead?.notes || '') : ''
   });
 
   // Estados da Inteligência Artificial
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
-  const [aiMessage, setAiMessage] = useState('');
-
-  // Sincronização e Limpeza Inteligente do Estado Comercial
-  useEffect(() => {
-    if (isOpen) {
-      if (isEditMode && initialLead) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setAiMessage(initialLead.aiPitch || '');
-
-         
-        setFormData({
-          name: initialLead.name || '',
-          type: initialLead.type || '',
-          phone: initialLead.phone || '',
-          address: initialLead.address || '',
-          notes: initialLead.notes || ''
-        });
-      } else {
-         
-        setFormData({ name: '', type: '', phone: '', address: '', notes: '' });
-        setAiMessage('');
-      }
-    } else {
-      // Ao fechar o modal, reseta os estados
-      setFormData({ name: '', type: '', phone: '', address: '', notes: '' });
-      setAiMessage('');
-    }
-  }, [isOpen, isEditMode, initialLead]);
+  const [aiMessage, setAiMessage] = useState(isEditMode ? (initialLead?.aiPitch || '') : '');
 
   if (!isOpen) return null;
 

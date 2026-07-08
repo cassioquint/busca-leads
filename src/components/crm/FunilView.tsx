@@ -210,6 +210,7 @@ export const FunilView: React.FC<FunilViewProps> = ({
 
       {/* ADD/EDIT LEAD MODAL */}
       <AddLeadModal
+        key={`lead-modal-${isModalOpen ? (editingLead?.id || 'new') : 'closed'}`}
         isOpen={isModalOpen}
         onClose={() => { setIsModalOpen(false); setEditingLead(null); }}
         initialLead={editingLead}
@@ -265,6 +266,7 @@ export const FunilView: React.FC<FunilViewProps> = ({
 
       {/* MODAL DO CÉREBRO DA IA */}
       <AIConfigModal
+        key={`ai-modal-${isAIModalOpen ? 'open' : 'closed'}`}
         isOpen={isAIModalOpen}
         onClose={() => setIsAIModalOpen(false)}
         initialConfig={aiConfig}

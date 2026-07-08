@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { X, Bot, MessageSquare, Briefcase, DollarSign, ShieldAlert, Info } from 'lucide-react';
 import type { AiConfigData } from '@/types';
 
@@ -16,37 +16,14 @@ export const AIConfigModal: React.FC<AIConfigModalProps> = ({
   onSave
 }) => {
   const [formData, setFormData] = useState<AiConfigData>({
-    aiTone: 'profissional',
-    service: '',
-    pricing: '',
-    generalRule: ''
+    aiTone: initialConfig?.aiTone || 'profissional',
+    service: initialConfig?.service || '',
+    pricing: initialConfig?.pricing || '',
+    generalRule: initialConfig?.generalRule || ''
   });
 
   const [isSaving, setIsSaving] = useState(false);
   const [showToneHelp, setShowToneHelp] = useState(false);
-
-  // Sincroniza os dados caso o usuário já tenha salvo configurações antes
-  useEffect(() => {
-    if (isOpen) {
-      if (initialConfig) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setFormData({
-          aiTone: initialConfig.aiTone || 'profissional',
-          service: initialConfig.service || '',
-          pricing: initialConfig.pricing || '',
-          generalRule: initialConfig.generalRule || ''
-        });
-      } else {
-         
-        setFormData({
-          aiTone: 'profissional',
-          service: '',
-          pricing: '',
-          generalRule: ''
-        });
-      }
-    }
-  }, [isOpen, initialConfig]);
 
   if (!isOpen) return null;
 
