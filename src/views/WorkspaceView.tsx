@@ -22,7 +22,6 @@ export const WorkspaceView: React.FC<WorkspaceViewProps> = ({ userEmail }) => {
     return cache === 'true';
   });
 
-  // Todo o peso do CRM agora vive aqui, isolado do App.tsx
   const crm = useCRM();
 
   return (
@@ -80,6 +79,9 @@ export const WorkspaceView: React.FC<WorkspaceViewProps> = ({ userEmail }) => {
           const reply = await api.generateLeadReply(id, lastMessage, clientResponse, userEmail);
           crm.handleUpdateLeadPitch(id, reply);
           return reply;
+        }}
+        onTranscribeAudio={async (id, file) => {
+          return await api.transcribeAudio(id, file);
         }}
         onFetchInteractions={async (id) => {
           return await api.getLeadInteractions(id);

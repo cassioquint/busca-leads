@@ -41,6 +41,7 @@ interface FunilViewProps {
   onGenerateAIPitch?: (leadId: string) => Promise<string>;
   onFetchInteractions?: (leadId: string) => Promise<LeadInteraction[]>;
   onGenerateAIReply?: (id: string, lastMessage: string, clientResponse: string) => Promise<string>;
+  onTranscribeAudio?: (id: string, file: File) => Promise<string>;
   onSaveAiConfig: (data: AiConfigData) => Promise<void>;
 }
 
@@ -66,6 +67,7 @@ export const FunilView: React.FC<FunilViewProps> = ({
   onGenerateAIPitch,
   onFetchInteractions,
   onGenerateAIReply,
+  onTranscribeAudio,
   onSaveAiConfig
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -218,6 +220,7 @@ export const FunilView: React.FC<FunilViewProps> = ({
         onGenerateAIPitch={onGenerateAIPitch}
         onFetchInteractions={onFetchInteractions}
         onGenerateAIReply={onGenerateAIReply}
+        onTranscribeAudio={onTranscribeAudio}
         onOpenAIConfig={() => setIsAIModalOpen(true)}
         onSubmit={(data) => {
           if (editingLead) {

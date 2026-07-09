@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Sparkles, Copy, Settings, MessageCircle, Send } from 'lucide-react';
+import { Sparkles, Copy, Settings, MessageCircle, Send, Paperclip } from 'lucide-react';
 import type { LeadInteraction } from '@/types';
+import { ClientBubble } from './ClientBubble';
 
 interface CopilotChatProps {
   aiMessage: string;
@@ -11,6 +12,7 @@ interface CopilotChatProps {
   interactions: LeadInteraction[];
   isLoadingHistory?: boolean;
   onGenerateReply?: (clientResponse: string) => void;
+  onTranscribeAudio?: (file: File) => Promise<string>;
   onOpenAIConfig?: () => void;
 }
 
@@ -23,9 +25,12 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({
   interactions,
   isLoadingHistory,
   onGenerateReply,
+  onTranscribeAudio,
   onOpenAIConfig
 }) => {
   const [clientInput, setClientInput] = useState('');
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -44,11 +49,35 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({
     setClientInput('');
   };
 
+  const handleAudioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !onTranscribeAudio) return;
+
+    setIsTranscribing(true);
+    try {
+      const text = await onTranscribeAudio(file);
+      
+      const finalMessage = clientInput.trim() 
+        ? `${clientInput}\n[Áudio]: ${text}` 
+        : `[Áudio]: ${text}`;
+      
+      if (onGenerateReply) {
+        onGenerateReply(finalMessage);
+        setClientInput('');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Erro ao transcrever o áudio.');
+    } finally {
+      setIsTranscribing(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.ctrlKey && !e.shiftKey) {
-      e.preventDefault(); // Evita que ele pule uma linha à toa
+      e.preventDefault();
       
-      // Só envia se tiver texto e não estiver aguardando a IA
       if (clientInput.trim() && !isGeneratingReply) {
         handleReplySubmit();
       }
@@ -122,15 +151,8 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({
                 );
               }
 
-              // Se for mensagem do Cliente (Estática)
-              return (
-                <div key={msg.id} className="flex flex-col gap-1 items-start">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Cliente</span>
-                  <div className="w-10/12 bg-white border border-slate-200 text-slate-700 text-sm p-3 rounded-2xl rounded-tl-sm shadow-sm">
-                    {msg.content}
-                  </div>
-                </div>
-              );
+              // 🌟 Se for mensagem do Cliente, usamos o nosso novo Componente Inteligente
+              return <ClientBubble key={msg.id} content={msg.content} />;
             })}
 
             {/* Input da Nova Resposta do Cliente */}
@@ -142,10 +164,31 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({
                   value={clientInput}
                   onChange={(e) => setClientInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Cole a nova resposta do cliente aqui..."
+                  placeholder={isTranscribing ? "Transcrevendo áudio..." : "Cole a resposta ou suba o áudio do cliente..."}
+                  disabled={isTranscribing}
                   rows={2}
                   className="w-full text-sm text-slate-700 bg-transparent resize-none focus:outline-none py-1.5"
                 />
+                <input 
+                  type="file" 
+                  accept="audio/*, video/mp4" 
+                  ref={fileInputRef} 
+                  onChange={handleAudioUpload} 
+                  className="hidden" 
+                />
+                <button 
+                  type="button" 
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isTranscribing || isGeneratingReply}
+                  className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors disabled:opacity-50 shrink-0 mb-0.5"
+                  title="Transcrever Áudio"
+                >
+                  {isTranscribing ? (
+                    <span className="w-4 h-4 border-2 border-slate-300 border-t-indigo-600 rounded-full animate-spin inline-block" />
+                  ) : (
+                    <Paperclip className="w-4 h-4" />
+                  )}
+                </button>
                 <button 
                   type="button" 
                   onClick={handleReplySubmit}

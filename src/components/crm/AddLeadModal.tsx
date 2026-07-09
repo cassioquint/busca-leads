@@ -12,11 +12,12 @@ interface AddLeadModalProps {
   onFetchInteractions?: (leadId: string) => Promise<LeadInteraction[]>;
   onOpenAIConfig?: () => void;
   onGenerateAIReply?: (leadId: string, lastMessage: string, clientResponse: string) => Promise<string>;
+  onTranscribeAudio?: (leadId: string, file: File) => Promise<string>;
 }
 
 export const AddLeadModal: React.FC<AddLeadModalProps> = ({
   isOpen, onClose, onSubmit, initialLead = null, isEditMode = false,
-  onGenerateAIPitch, onFetchInteractions, onOpenAIConfig, onGenerateAIReply
+  onGenerateAIPitch, onFetchInteractions, onOpenAIConfig, onGenerateAIReply, onTranscribeAudio
 }) => {
   const [formData, setFormData] = useState({
     name: isEditMode ? (initialLead?.name || '') : '',
@@ -100,6 +101,13 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
     }
   };
 
+  const handleTranscribeAudio = async (file: File) => {
+    if (!initialLead?.id || !onTranscribeAudio) {
+      throw new Error("Lead não identificado para transcrição.");
+    }
+    return await onTranscribeAudio(initialLead.id, file);
+  };
+
   const isSplitView = Boolean(isEditMode && initialLead?.id);
 
   return (
@@ -119,6 +127,7 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
       isGeneratingReply={isGeneratingReply}
       onGeneratePitch={handleGeneratePitch}
       onGenerateReply={handleGenerateReply}
+      onTranscribeAudio={handleTranscribeAudio}
       onOpenAIConfig={onOpenAIConfig}
     />
   );

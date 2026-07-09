@@ -245,5 +245,23 @@ export const leadApi = {
 
     const data = await response.json();
     return data.reply;
-  }
+  },
+
+  // Envia o áudio como FormData
+  async transcribeAudio (id: string, audioFile: File) {
+    const headers = await getAuthHeaders();
+    delete headers['Content-Type'];
+    const formData = new FormData();
+    formData.append('audio', audioFile);
+
+    const response = await fetch(`${BASE_URL}/leads/${id}/transcribe`, {
+      method: 'POST',
+      headers,
+      body: formData
+    });
+
+    if (!response.ok) throw new Error('Falha ao transcrever áudio.');
+    const data = await response.json();
+    return data.text;
+  },
 };

@@ -11,11 +11,11 @@ interface AddLeadModalLayoutProps {
   onSubmit: (e: React.FormEvent) => void;
   isEditMode: boolean;
   isSplitView: boolean;
-  
+
   // Estados do Form
   formData: LeadFormData;
   setFormData: React.Dispatch<React.SetStateAction<LeadFormData>>;
-  
+
   // Estados e Funções do Chat
   aiMessage: string;
   setAiMessage: React.Dispatch<React.SetStateAction<string>>;
@@ -25,6 +25,7 @@ interface AddLeadModalLayoutProps {
   isGeneratingReply: boolean;
   onGeneratePitch: () => void;
   onGenerateReply: (clientResponse: string) => void;
+  onTranscribeAudio?: (file: File) => Promise<string>;
   onOpenAIConfig?: () => void;
 }
 
@@ -32,7 +33,7 @@ export const AddLeadModalLayout: React.FC<AddLeadModalLayoutProps> = ({
   isOpen, onClose, onSubmit, isEditMode, isSplitView,
   formData, setFormData,
   aiMessage, setAiMessage, interactions, isLoadingHistory,
-  isGeneratingAI, isGeneratingReply, onGeneratePitch, onGenerateReply, onOpenAIConfig
+  isGeneratingAI, isGeneratingReply, onGeneratePitch, onGenerateReply, onTranscribeAudio, onOpenAIConfig
 }) => {
   if (!isOpen) return null;
 
@@ -41,7 +42,7 @@ export const AddLeadModalLayout: React.FC<AddLeadModalLayoutProps> = ({
       <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose} />
 
       <div className={`relative w-full ${isSplitView ? 'max-w-5xl' : 'max-w-lg'} bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh]`}>
-        
+
         {/* Cabeçalho */}
         <div className="bg-slate-50 px-8 py-5 border-b border-slate-200 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
@@ -64,7 +65,7 @@ export const AddLeadModalLayout: React.FC<AddLeadModalLayoutProps> = ({
 
         {/* Corpo */}
         <form onSubmit={onSubmit} className="flex flex-1 overflow-hidden">
-          
+
           {/* Esquerda: Formulário */}
           <div className={`flex-1 p-8 overflow-y-auto ${isSplitView ? 'border-r border-slate-200' : ''}`}>
             <LeadDetailsForm formData={formData} setFormData={setFormData} isEditMode={isEditMode} />
@@ -81,11 +82,16 @@ export const AddLeadModalLayout: React.FC<AddLeadModalLayoutProps> = ({
           {/* Direita: Copiloto */}
           {isSplitView && (
             <div className="w-[450px] shrink-0 bg-slate-50/50 flex flex-col">
-              <CopilotChat 
-                aiMessage={aiMessage} setAiMessage={setAiMessage}
-                interactions={interactions} isLoadingHistory={isLoadingHistory}
-                isGeneratingAI={isGeneratingAI} isGeneratingReply={isGeneratingReply}
-                onGenerateAIPitch={onGeneratePitch} onGenerateReply={onGenerateReply}
+              <CopilotChat
+                aiMessage={aiMessage}
+                setAiMessage={setAiMessage}
+                interactions={interactions}
+                isLoadingHistory={isLoadingHistory}
+                isGeneratingAI={isGeneratingAI}
+                isGeneratingReply={isGeneratingReply}
+                onGenerateAIPitch={onGeneratePitch}
+                onGenerateReply={onGenerateReply}
+                onTranscribeAudio={onTranscribeAudio}
                 onOpenAIConfig={onOpenAIConfig}
               />
             </div>

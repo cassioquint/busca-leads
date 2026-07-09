@@ -23,6 +23,7 @@ export const api = {
   saveAiConfig: leadApi.saveAiConfig,
   getAiConfig: leadApi.getAiConfig,
   generateLeadReply: leadApi.generateLeadReply,
+  transcribeAudio: leadApi.transcribeAudio,
 
   getBuckets: bucketApi.getBuckets,
   createBucket: bucketApi.createBucket,
