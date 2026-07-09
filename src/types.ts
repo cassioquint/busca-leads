@@ -79,3 +79,11 @@ export interface LeadFormData {
   address: string; 
   notes: string;
 }
+
+export interface LeadInteraction {
+  id: string;
+  leadId: string;
+  role: 'ai' | 'client' | 'user';
+  content: string;
+  createdAt?: string | Date;
+}

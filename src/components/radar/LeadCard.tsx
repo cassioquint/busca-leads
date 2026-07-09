@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Bookmark, Check } from 'lucide-react';
+import { Star, Check, Funnel } from 'lucide-react';
 import type { Lead } from '@/types';
 
 interface LeadCardProps {
@@ -95,8 +95,8 @@ export const LeadCard: React.FC<LeadCardProps> = ({ lead, onSave }) => {
               </>
             ) : (
               <>
-                <Bookmark className="w-3 h-3" />
-                <span>Mover para o Kanban</span>
+                <Funnel className="w-3 h-3" />
+                <span>Mover para o Funil</span>
               </>
             )}
           </button>

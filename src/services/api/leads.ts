@@ -175,6 +175,18 @@ export const leadApi = {
     return data.pitch;
   },
 
+  getLeadInteractions: async (id: string) => {
+    const headers = await getAuthHeaders();
+    
+    const response = await fetch(`${BASE_URL}/leads/${id}/interactions`, {
+      method: 'GET',
+      headers
+    });
+
+    if (!response.ok) throw new Error('Falha ao buscar o histórico.');
+    return await response.json();
+  },
+
   // Salvar configurações da IA
   async saveAiConfig(user: string, configData: AiConfigData) {
     const headers = await getAuthHeaders();

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Header } from '@/components/layout/Header';
+import { Header } from '@/components/common/Header';
 import { LimitModal } from '@/components/common/LimitModal';
 import { ProfileView } from '@/views/ProfileView';
 import { LoginView } from './LoginView';

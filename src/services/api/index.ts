@@ -19,6 +19,7 @@ export const api = {
   updateLeadNotes: leadApi.updateLeadNotes,
   deleteLead: leadApi.deleteLead,
   generateAIPitch: leadApi.generateAIPitch,
+  getLeadInteractions: leadApi.getLeadInteractions,
   saveAiConfig: leadApi.saveAiConfig,
   getAiConfig: leadApi.getAiConfig,
   generateLeadReply: leadApi.generateLeadReply,

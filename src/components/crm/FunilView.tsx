@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { Lead, Tag, AiConfigData } from '@/types';
+import type { Lead, Tag, AiConfigData, LeadInteraction } from '@/types';
 import { api } from '@/services/api';
 import { Loader2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -39,6 +39,7 @@ interface FunilViewProps {
   onMoveColumn: (id: string, direction: 'left' | 'right') => void;
   onImportLeadsInBulk: (leads: Partial<Lead>[]) => Promise<void>;
   onGenerateAIPitch?: (leadId: string) => Promise<string>;
+  onFetchInteractions?: (leadId: string) => Promise<LeadInteraction[]>;
   onGenerateAIReply?: (id: string, lastMessage: string, clientResponse: string) => Promise<string>;
   onSaveAiConfig: (data: AiConfigData) => Promise<void>;
 }
@@ -63,6 +64,7 @@ export const FunilView: React.FC<FunilViewProps> = ({
   onMoveColumn,
   onImportLeadsInBulk,
   onGenerateAIPitch,
+  onFetchInteractions,
   onGenerateAIReply,
   onSaveAiConfig
 }) => {
@@ -214,6 +216,7 @@ export const FunilView: React.FC<FunilViewProps> = ({
         initialLead={editingLead}
         isEditMode={!!editingLead}
         onGenerateAIPitch={onGenerateAIPitch}
+        onFetchInteractions={onFetchInteractions}
         onGenerateAIReply={onGenerateAIReply}
         onOpenAIConfig={() => setIsAIModalOpen(true)}
         onSubmit={(data) => {

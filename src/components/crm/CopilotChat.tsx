@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Sparkles, Copy, Settings, MessageCircle, Send } from 'lucide-react';
+import type { LeadInteraction } from '@/types';
 
 interface CopilotChatProps {
   aiMessage: string;
@@ -7,6 +8,8 @@ interface CopilotChatProps {
   isGeneratingAI: boolean;
   isGeneratingReply?: boolean;
   onGenerateAIPitch: () => void;
+  interactions: LeadInteraction[];
+  isLoadingHistory?: boolean;
   onGenerateReply?: (clientResponse: string) => void;
   onOpenAIConfig?: () => void;
 }
@@ -17,11 +20,18 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({
   isGeneratingAI,
   isGeneratingReply,
   onGenerateAIPitch,
+  interactions,
+  isLoadingHistory,
   onGenerateReply,
   onOpenAIConfig
 }) => {
-  // Estado local para guardar o que a Elis vai colar do WhatsApp
   const [clientInput, setClientInput] = useState('');
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [interactions, aiMessage]);
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(aiMessage);
@@ -32,6 +42,17 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({
     if (!clientInput.trim() || !onGenerateReply) return;
     onGenerateReply(clientInput);
     setClientInput('');
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.ctrlKey && !e.shiftKey) {
+      e.preventDefault(); // Evita que ele pule uma linha à toa
+      
+      // Só envia se tiver texto e não estiver aguardando a IA
+      if (clientInput.trim() && !isGeneratingReply) {
+        handleReplySubmit();
+      }
+    }
   };
 
   return (
@@ -58,33 +79,70 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({
       </div>
 
       {/* Feed do Chat */}
-      <div className="flex-1 p-4 overflow-y-auto flex flex-col gap-4">
-        {aiMessage ? (
+      <div className="flex-1 p-4 overflow-y-auto flex flex-col gap-4 custom-scrollbar">
+        
+        {isLoadingHistory ? (
+           <div className="flex-1 flex items-center justify-center text-slate-400 text-xs font-semibold">
+             <span className="animate-pulse">Carregando conversa...</span>
+           </div>
+        ) : interactions.length > 0 || aiMessage ? (
           <>
-            {/* Balão da IA (Sua Mensagem) */}
-            <div className="flex flex-col gap-1 items-end animate-in fade-in slide-in-from-right-4 duration-300">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">Mensagem Sugerida</span>
-              <div className="relative group w-11/12">
-                <textarea
-                  value={aiMessage}
-                  onChange={(e) => setAiMessage(e.target.value)}
-                  className="w-full h-32 text-sm text-indigo-900 p-3 rounded-2xl rounded-tr-sm border border-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-indigo-50/50 resize-none shadow-sm"
-                />
-                <button type="button" onClick={copyToClipboard} className="absolute top-2 right-2 p-1.5 bg-white hover:bg-indigo-100 text-slate-400 hover:text-indigo-600 rounded-md transition-colors opacity-0 group-hover:opacity-100 cursor-pointer shadow-sm" title="Copiar mensagem">
-                  <Copy className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
+            {/* 🌟 Mapeia o Histórico */}
+            {interactions.map((msg, index) => {
+              const isLastMessage = index === interactions.length - 1;
+              const isAI = msg.role === 'ai';
 
-            {/* Input da Resposta do Cliente */}
-            <div className="flex flex-col gap-1 items-start mt-auto animate-in fade-in duration-300">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">O que o cliente respondeu?</span>
-              <div className="w-full bg-white border border-slate-200 p-2 rounded-2xl rounded-tl-sm shadow-sm flex items-end gap-2 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 transition-all">
+              // Se for a IA E for a última mensagem, renderiza o componente Editável
+              if (isAI && isLastMessage) {
+                return (
+                  <div key={msg.id} className="flex flex-col gap-1 items-end animate-in fade-in slide-in-from-right-2 duration-300">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mr-1">Mensagem Atual (Editável)</span>
+                    <div className="relative group w-11/12">
+                      <textarea
+                        value={aiMessage}
+                        onChange={(e) => setAiMessage(e.target.value)}
+                        className="w-full min-h-[120px] text-sm text-indigo-900 p-3 rounded-2xl rounded-tr-sm border-2 border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-indigo-50/80 resize-y shadow-sm font-medium"
+                      />
+                      <button type="button" onClick={copyToClipboard} className="absolute top-2 right-2 p-1.5 bg-white hover:bg-indigo-100 text-slate-400 hover:text-indigo-600 rounded-md transition-colors opacity-0 group-hover:opacity-100 cursor-pointer shadow-sm" title="Copiar mensagem">
+                        <Copy className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              }
+
+              // Se for mensagem antiga da IA (Estática)
+              if (isAI) {
+                return (
+                  <div key={msg.id} className="flex flex-col gap-1 items-end opacity-75 hover:opacity-100 transition-opacity">
+                    <div className="w-10/12 bg-indigo-100 text-indigo-900 text-sm p-3 rounded-2xl rounded-tr-sm shadow-sm">
+                      {msg.content}
+                    </div>
+                  </div>
+                );
+              }
+
+              // Se for mensagem do Cliente (Estática)
+              return (
+                <div key={msg.id} className="flex flex-col gap-1 items-start">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Cliente</span>
+                  <div className="w-10/12 bg-white border border-slate-200 text-slate-700 text-sm p-3 rounded-2xl rounded-tl-sm shadow-sm">
+                    {msg.content}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Input da Nova Resposta do Cliente */}
+            <div className="flex flex-col gap-1 items-start mt-4 animate-in fade-in duration-300 border-t border-slate-200/60 pt-4">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Responder Cliente</span>
+              <div className="w-full bg-white border border-slate-200 p-2 rounded-2xl shadow-sm flex items-end gap-2 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 transition-all">
                 <MessageCircle className="w-5 h-5 text-slate-400 mb-2 ml-1 shrink-0" />
                 <textarea
                   value={clientInput}
                   onChange={(e) => setClientInput(e.target.value)}
-                  placeholder="Cole a objeção ou dúvida do cliente aqui..."
+                  onKeyDown={handleKeyDown}
+                  placeholder="Cole a nova resposta do cliente aqui..."
                   rows={2}
                   className="w-full text-sm text-slate-700 bg-transparent resize-none focus:outline-none py-1.5"
                 />
@@ -93,24 +151,21 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({
                   onClick={handleReplySubmit}
                   disabled={!clientInput.trim() || isGeneratingReply}
                   className="p-2.5 bg-slate-900 hover:bg-indigo-600 text-white rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed shrink-0 mb-0.5"
-                  title="Gerar Tréplica"
                 >
-                  {isGeneratingReply ? (
-                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block" />
-                  ) : (
-                    <Send className="w-4 h-4 ml-0.5" />
-                  )}
+                  {isGeneratingReply ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block" /> : <Send className="w-4 h-4 ml-0.5" />}
                 </button>
               </div>
             </div>
           </>
         ) : (
+          /* Estado Vazio */
           <div className="h-full flex flex-col items-center justify-center text-center px-4 opacity-50">
             <Sparkles className="w-8 h-8 text-indigo-400 mb-2" />
             <p className="text-xs text-indigo-900 font-medium">O Copiloto está aguardando.</p>
             <p className="text-[10px] text-indigo-600 mt-1">Gere uma nova abordagem para iniciar a conversa.</p>
           </div>
         )}
+        <div ref={messagesEndRef} />
       </div>
     </div>
   );

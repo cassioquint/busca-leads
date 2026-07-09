@@ -11,7 +11,7 @@ interface WorkspaceViewProps {
 
 export const WorkspaceView: React.FC<WorkspaceViewProps> = ({ userEmail }) => {
   const [isRadarOpen, setIsRadarOpen] = useState(true);
-  
+
   const [radarLeads, setRadarLeads] = useState<Lead[]>(() => {
     const cache = localStorage.getItem('locus_last_search_results');
     return cache ? JSON.parse(cache) : [];
@@ -65,7 +65,7 @@ export const WorkspaceView: React.FC<WorkspaceViewProps> = ({ userEmail }) => {
         onUpdateLeadNotes={crm.handleUpdateLeadNotes}
         onImportLeadsInBulk={crm.handleImportLeadsInBulk}
         isLoading={crm.isLoadingCRM}
-        
+
         // --- MÓDULO DE IA INTEGRADO ---
         userEmail={userEmail}
         onSaveAiConfig={async (data) => {
@@ -76,12 +76,13 @@ export const WorkspaceView: React.FC<WorkspaceViewProps> = ({ userEmail }) => {
           crm.handleUpdateLeadPitch(id, pitch);
           return pitch;
         }}
-        // 🌟 NOVA FUNÇÃO DA TRÉPLICA AQUI
         onGenerateAIReply={async (id, lastMessage, clientResponse) => {
           const reply = await api.generateLeadReply(id, lastMessage, clientResponse, userEmail);
-          // Opcional: Atualizar o estado do React imediatamente para não perder a tréplica ao fechar o modal
-          crm.handleUpdateLeadPitch(id, reply); 
+          crm.handleUpdateLeadPitch(id, reply);
           return reply;
+        }}
+        onFetchInteractions={async (id) => {
+          return await api.getLeadInteractions(id);
         }}
       />
     </>
