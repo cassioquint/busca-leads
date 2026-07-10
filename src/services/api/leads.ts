@@ -192,7 +192,7 @@ export const leadApi = {
     const headers = await getAuthHeaders();
     
     const response = await fetch(`${BASE_URL}/ai-config`, {
-      method: 'PUT', // ou POST, dependendo de como você criar a rota no backend
+      method: 'PUT',
       headers,
       body: JSON.stringify({ 
         userEmail: user, 

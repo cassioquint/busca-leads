@@ -19,7 +19,8 @@ export const AIConfigModal: React.FC<AIConfigModalProps> = ({
     aiTone: initialConfig?.aiTone || 'profissional',
     service: initialConfig?.service || '',
     pricing: initialConfig?.pricing || '',
-    generalRule: initialConfig?.generalRule || ''
+    generalRule: initialConfig?.generalRule || '',
+    objectionsPlaybook: initialConfig?.objectionsPlaybook || '',
   });
 
   const [isSaving, setIsSaving] = useState(false);
@@ -107,7 +108,7 @@ export const AIConfigModal: React.FC<AIConfigModalProps> = ({
               <option value="descontraida">Descontraído e Moderno (Ideal para agências e tech)</option>
             </select>
 
-            {/* 🌟 Painel de Ajuda Condicional */}
+            {/* Painel de Ajuda Condicional */}
             {showToneHelp && (
               <div className="mt-3 p-4 bg-indigo-50/50 border border-indigo-100 rounded-xl text-xs text-slate-600 space-y-3 animate-in slide-in-from-top-2 duration-200">
                 <p className="font-semibold text-indigo-900 mb-1">O que esperar de cada tom:</p>
@@ -164,6 +165,26 @@ export const AIConfigModal: React.FC<AIConfigModalProps> = ({
               placeholder="Ex: Nunca dê desconto na primeira mensagem. Evite usar a palavra 'barato', use 'custo-benefício'. Sempre termine com uma pergunta aberta."
               rows={3}
               className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm focus:outline-none focus:border-indigo-500 focus:bg-white transition-all resize-none text-slate-700 placeholder:text-slate-400 leading-relaxed"
+            />
+          </div>
+
+          {/* Matriz de objeções */}
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-bold text-slate-700 flex items-center justify-between">
+              Contorno de Objeções (Playbook)
+              <span className="text-[10px] font-normal text-slate-400 uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded-full">
+                Opcional
+              </span>
+            </label>
+            <p className="text-xs text-slate-500 mb-1">
+              Ensine a IA como lidar com as resistências mais comuns dos seus clientes.
+            </p>
+            <textarea
+              value={formData.objectionsPlaybook}
+              onChange={(e) => setFormData({ ...formData, objectionsPlaybook: e.target.value })}
+              rows={4}
+              placeholder={`Exemplos:\n- Se o cliente disser "está caro", foque no custo-benefício e ofereça parcelamento em 12x.\n- Se disser "já tenho fornecedor", pergunte sobre o tempo de resposta do suporte atual.\n- Se disser "vou pensar", pergunte qual é a principal dúvida que o impede de avançar agora.`}
+              className="w-full text-sm text-slate-700 bg-white border border-slate-200 p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all resize-y custom-scrollbar placeholder:text-slate-300 placeholder:italic"
             />
           </div>
 

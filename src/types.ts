@@ -70,6 +70,7 @@ export interface AiConfigData {
   service: string;
   pricing?: string;
   generalRule?: string;
+  objectionsPlaybook?: string;
 }
 
 export interface LeadFormData {
