@@ -1,83 +1,83 @@
 import React, { useState } from 'react';
-import { X, Sparkles, AlertCircle, KanbanSquare, Search, Loader2 } from 'lucide-react';
+import { X, Sparkles, AlertCircle, KanbanSquare, Search, Loader2, Zap } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { userApi } from '@/services/api/users';
+import { type ModalContentConfig } from '@/types';
 
 interface LimitModalProps {
   onGoToPricing: () => void;
 }
 
+// 1. DICIONÁRIO DE CONTEÚDOS
+// Mapeamos os erros específicos conhecidos. O que não estiver aqui, cai no DEFAULT.
+const MODAL_CONTENT_MAP: Record<string, ModalContentConfig> = {
+  SEARCHES_LIMIT: {
+    title: 'Ah não! Suas buscas acabaram...',
+    getDescription: (planName: string, max: number) => (
+      <>Você atingiu o limite máximo de <span className="font-bold text-slate-800">{max} buscas</span> mensais disponíveis no seu plano <span className="text-indigo-600 font-bold">{planName}</span>.</>
+    ),
+    badgeIcon: <Search className="w-4 h-4 fill-indigo-100" />,
+    badgeTitle: 'Desbloqueie o Radar Ilimitado',
+    badgeText: 'Assine um dos nossos pacotes comerciais para liberar importações em lote, exportação de relatórios e buscas sem travas.'
+  },
+  FUNNEL_LIMIT: {
+    title: 'Atenção! Seu funil está cheio...',
+    getDescription: (planName: string, max: number) => (
+      <>Você atingiu o limite de armazenamento de <span className="font-bold text-slate-800">{max} leads ativos</span> simultâneos no quadro do plano <span className="text-indigo-600 font-bold">{planName}</span>.</>
+    ),
+    badgeIcon: <KanbanSquare className="w-4 h-4" />,
+    badgeTitle: 'Aumente a Capacidade do Kanban',
+    badgeText: 'Gere mais prospecções ativas limpando leads antigos ou fazendo upgrade para gerenciar centenas de empresas sem barreiras.'
+  },
+  AI_USAGE_LIMIT: {
+    title: 'Degustação da IA Concluída!',
+    getDescription: () => (
+      <>Você utilizou todos os seus créditos gratuitos de <span className="font-bold text-slate-800">Inteligência Artificial</span>. Faça o upgrade para automatizar suas respostas ilimitadamente.</>
+    ),
+    badgeIcon: <Zap className="w-4 h-4 text-indigo-600 fill-indigo-100" />,
+    badgeTitle: 'Automatize suas Vendas',
+    badgeText: 'Deixe a IA analisar o perfil do cliente e redigir objeções personalizadas com o seu tom de voz em segundos.'
+  },
+  DEFAULT: {
+    title: 'Recurso Exclusivo PRO',
+    getDescription: () => (
+      <>Faça o upgrade do seu plano para utilizar esta e outras <span className="font-bold text-slate-800">ferramentas avançadas</span> de produtividade no BuscaLeads.</>
+    ),
+    badgeIcon: <Sparkles className="w-4 h-4 fill-indigo-100 text-indigo-600" />,
+    badgeTitle: 'Acelere sua Rotina',
+    badgeText: 'O plano PRO desbloqueia ferramentas de automação, relatórios, importação de planilhas e muito mais para escalar seu negócio.'
+  }
+};
+
 export const LimitModal: React.FC<LimitModalProps> = ({ onGoToPricing }) => {
   const { limitModalType, setLimitModalType, getFirebaseToken, user } = useAuth();
   const [isConnectingGateway, setIsConnectingGateway] = useState(false);
 
-  // Se o modal não estiver ativo para nenhum bloqueio, não renderiza nada
   if (!limitModalType) return null;
 
   const onClose = () => setLimitModalType(null);
 
-  const isSearchesLimit = limitModalType === 'SEARCHES_LIMIT';
   const planName = user?.plan?.name || 'Degustação';
 
-  const isFeatureBlocked = user?.plan && (!user.plan.bulkImportAllowed || !user.plan.exportAllowed);
+  // 2. SELEÇÃO DINÂMICA
+  // Pega o conteúdo do dicionário com base na string do state. Se não achar, usa o DEFAULT.
+  const contentConfig = MODAL_CONTENT_MAP[limitModalType] || MODAL_CONTENT_MAP.DEFAULT;
 
-  const getContent = () => {
-    if (isSearchesLimit) {
-      return {
-        title: 'Ah não! Suas buscas acabaram...',
-        description: (
-          <>
-            Você atingiu o limite máximo de <span className="font-bold text-slate-800">{user?.plan?.maxSearchesPerMonth ?? 15} buscas</span> mensais disponíveis no seu plano <span className="text-indigo-600 font-bold">{planName}</span>.
-          </>
-        ),
-        badgeIcon: <Search className="w-4 h-4 fill-indigo-100" />,
-        badgeTitle: 'Desbloqueie o Radar Ilimitado',
-        badgeText: 'Assine um dos nossos pacotes comerciais para liberar importações em lote, exportação de relatórios e buscas sem travas.'
-      };
-    }
+  // Como as buscas e funil precisam de variáveis numéricas, passamos dinamicamente (usando fallback para não quebrar)
+  const maxLimit = limitModalType === 'SEARCHES_LIMIT'
+    ? (user?.plan?.maxSearchesPerMonth ?? 15)
+    : (user?.plan?.maxLeadsInFunnel ?? 20);
 
-    if (isFeatureBlocked) {
-      return {
-        title: 'Ops... Recurso não disponível',
-        description: (
-          <>
-            Faça o upgrade do seu plano para utilizar as ferramentas de <span className="font-bold text-slate-800">importação e exportação via planilha</span> no BuscaLeads.
-          </>
-        ),
-        badgeIcon: <Sparkles className="w-4 h-4 fill-indigo-100 text-indigo-600" />,
-        badgeTitle: 'Liberar Ferramentas de Produtividade',
-        badgeText: 'Acelere sua rotina trazendo listas prontas do Excel diretamente para o seu pipeline e exporte relatórios comerciais em segundos.'
-      };
-    }
-
-    return {
-      title: 'Atenção! Seu funil está cheio...',
-      description: (
-        <>
-          Você atingiu o limite de armazenamento de <span className="font-bold text-slate-800">{user?.plan?.maxLeadsInFunnel ?? 20} leads ativos</span> simultâneos no quadro do plano <span className="text-indigo-600 font-bold">{planName}</span>.
-        </>
-      ),
-      badgeIcon: <KanbanSquare className="w-4 h-4" />,
-      badgeTitle: 'Aumente a Capacidade do Kanban',
-      badgeText: 'Gere mais prospecções ativas limpando leads antigos ou fazendo upgrade para gerenciar centenas de empresas sem barreiras.'
-    };
-  };
-
-  const content = getContent();
-
-  // Trata o clique de ação rápida para contratação
   const handleUpgradeAction = async () => {
-    // Se o usuário possui asaasCustomerId e tentou usar uma função Pro bloqueada, pula passos e gera o checkout direto
-    if (isFeatureBlocked && user?.asaasCustomerId) {
+    // 3. CHECKOUT RÁPIDO GENÉRICO
+    // Qualquer trava permite o checkout rápido se o usuário já tiver o ID do Asaas
+    if (user?.asaasCustomerId) {
       setIsConnectingGateway(true);
       try {
-        // 🌟 CORREÇÃO: Consome de forma limpa e tipada a nova função do contexto
-        const token = await getFirebaseToken(); 
-        
-        if (!token) {
-          throw new Error('Não foi possível recuperar o token de autenticação ativo.');
-        }
-        
+        const token = await getFirebaseToken();
+
+        if (!token) throw new Error('Token ausente.');
+
         const response = await userApi.initializeCheckout(token, {
           planKey: 'pro',
           billingType: 'UNDEFINED'
@@ -90,14 +90,12 @@ export const LimitModal: React.FC<LimitModalProps> = ({ onGoToPricing }) => {
         }
       } catch (error) {
         console.error('❌ Falha ao acionar checkout rápido:', error);
-        // Se falhar por qualquer motivo (token expirado ou rede), segue o fluxo seguro mandando para a PricingView
         onClose();
         onGoToPricing();
       } finally {
         setIsConnectingGateway(false);
       }
     } else {
-      // Fluxo tradicional para quem excedeu buscas, espaço ou não tem cadastro de faturamento inicializado
       onClose();
       onGoToPricing();
     }
@@ -105,17 +103,10 @@ export const LimitModal: React.FC<LimitModalProps> = ({ onGoToPricing }) => {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
-      
-      {/* BACKDROP ESCURO ACETINADO */}
-      <div 
-        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
 
-      {/* CONTAINER DO MODAL */}
       <div className="relative w-full max-w-[420px] bg-white rounded-3xl p-6 shadow-2xl border border-slate-100 flex flex-col items-center text-center space-y-5 animate-in zoom-in-95 duration-200 z-10">
-        
-        {/* BOTÃO FECHAR */}
+
         <button
           type="button"
           onClick={onClose}
@@ -125,7 +116,6 @@ export const LimitModal: React.FC<LimitModalProps> = ({ onGoToPricing }) => {
           <X className="w-4 h-4" />
         </button>
 
-        {/* ILUSTRAÇÃO: CARINHA CHORANDO */}
         <div className="relative pt-2">
           <div className="w-20 h-20 bg-amber-50 border border-amber-200 rounded-full flex flex-col items-center justify-center relative shadow-sm">
             <div className="flex gap-5 mt-2">
@@ -143,30 +133,27 @@ export const LimitModal: React.FC<LimitModalProps> = ({ onGoToPricing }) => {
           </div>
         </div>
 
-        {/* MENSAGEM DINÂMICA */}
         <div className="space-y-2">
           <h2 className="text-lg font-extrabold text-slate-900 tracking-tight">
-            {content.title}
+            {contentConfig.title}
           </h2>
           <div className="text-xs text-slate-500 font-medium leading-relaxed px-2">
-            {content.description}
+            {contentConfig.getDescription(planName, maxLimit)}
           </div>
         </div>
 
-        {/* CONTEXTO DE BENEFÍCIO DINÂMICO */}
         <div className="w-full bg-slate-50/80 border border-slate-100 rounded-2xl p-3.5 text-left flex items-start gap-3">
           <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl shrink-0">
-            {content.badgeIcon}
+            {contentConfig.badgeIcon}
           </div>
           <div>
-            <h4 className="text-xs font-bold text-slate-800">{content.badgeTitle}</h4>
+            <h4 className="text-xs font-bold text-slate-800">{contentConfig.badgeTitle}</h4>
             <p className="text-[10px] text-slate-500 font-medium mt-0.5 leading-normal">
-              {content.badgeText}
+              {contentConfig.badgeText}
             </p>
           </div>
         </div>
 
-        {/* AÇÕES */}
         <div className="w-full flex flex-col gap-2 pt-1">
           <button
             type="button"
@@ -182,11 +169,11 @@ export const LimitModal: React.FC<LimitModalProps> = ({ onGoToPricing }) => {
             ) : (
               <>
                 <Sparkles className="w-3.5 h-3.5 fill-white" />
-                <span>{isFeatureBlocked && user?.asaasCustomerId ? 'Ativar Plano Pro Agora' : 'Ver Planos e Preços'}</span>
+                <span>{user?.asaasCustomerId ? 'Ativar Plano Pro Agora' : 'Ver Planos e Preços'}</span>
               </>
             )}
           </button>
-          
+
           <button
             type="button"
             onClick={onClose}

@@ -1,6 +1,5 @@
 import { useRef, useEffect } from 'react';
 import { api } from '@/services/api';
-import { useAuth } from '@/hooks/useAuth';
 import type { Lead, Bucket, Tag } from '@/types';
 
 interface UseCRMLeadsProps {
@@ -21,7 +20,6 @@ export const useCRMLeads = ({
   tags
 }: UseCRMLeadsProps) => {
   const bucketsRef = useRef<Bucket[]>(buckets);
-  const { setLimitModalType, user } = useAuth();
 
   useEffect(() => {
     bucketsRef.current = buckets;
@@ -70,11 +68,7 @@ export const useCRMLeads = ({
 
       setFunilLeads(prev => prev.filter(l => l.id !== id && l.googlePlaceId !== id));
 
-      if (error instanceof Error && error.message === 'FUNNEL_LIMIT') {
-        setLimitModalType('FUNNEL_LIMIT');
-      } else {
-        alert("Houve um erro operacional ao salvar o lead.");
-      }
+      alert("Houve um erro operacional ao salvar o lead.");
     }
   };
 
@@ -132,11 +126,7 @@ export const useCRMLeads = ({
       console.error(error);
       setFunilLeads(prev => prev.filter(l => l.id !== tempId));
 
-      if (error instanceof Error && error.message === 'FUNNEL_LIMIT') {
-        setLimitModalType('FUNNEL_LIMIT');
-      } else {
-        alert("Erro ao salvar o lead manual.");
-      }
+      alert("Erro ao salvar o lead manual.");
     }
   };
 
@@ -210,11 +200,6 @@ export const useCRMLeads = ({
   const handleImportLeadsInBulk = async (newLeads: Partial<Lead>[]) => {
     if (!userEmail) return;
 
-    if (user?.plan && !user.plan.bulkImportAllowed) {
-      setLimitModalType('FUNNEL_LIMIT');
-      return;
-    }
-
     try {
       const savedLeadsFromServer = await api.importLeadsBulk(newLeads, userEmail);
       setFunilLeads(prev => [...prev, ...savedLeadsFromServer]);
@@ -222,11 +207,7 @@ export const useCRMLeads = ({
     } catch (error: unknown) {
       console.error(error);
 
-      if (error instanceof Error && error.message === 'FUNNEL_LIMIT') {
-        setLimitModalType('FUNNEL_LIMIT');
-      } else {
-        alert('Erro ao salvar os leads importados no servidor.');
-      }
+      alert('Erro ao salvar os leads importados no servidor.');
     }
   };
 

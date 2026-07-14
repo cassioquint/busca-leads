@@ -65,6 +65,14 @@ export interface ExtendedUser {
   getIdToken: (forceRefresh?: boolean) => Promise<string>;
 }
 
+export interface ModalContentConfig {
+  title: string;
+  getDescription: (planName: string, max: number) => React.ReactNode;
+  badgeIcon: React.ReactNode;
+  badgeTitle: string;
+  badgeText: string;
+}
+
 export interface AiConfigData {
   aiTone: string;
   service: string;
