@@ -16,6 +16,18 @@ function App() {
     api.getStatus().catch(() => console.log('Servidor em nuvem ainda a inicializar...'));
   }, []);
 
+  useEffect(() => {
+    const handleLimitEvent = (event: Event) => {
+      const customEvent = event as CustomEvent<string>;
+      setLimitModalType(customEvent.detail);
+    };
+
+    window.addEventListener('showLimitModal', handleLimitEvent);
+
+    // Limpeza do ouvinte quando o componente desmontar
+    return () => window.removeEventListener('showLimitModal', handleLimitEvent);
+  }, [setLimitModalType]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center font-semibold text-slate-500 text-xs">
@@ -39,9 +51,9 @@ function App() {
 
       <main className="flex-1 w-full flex overflow-hidden relative">
         {view === 'profile' && (
-          <ProfileView 
-            onNavigateBack={() => setView('crm')} 
-            onNavigateToPricing={() => setView('pricing')} 
+          <ProfileView
+            onNavigateBack={() => setView('crm')}
+            onNavigateToPricing={() => setView('pricing')}
           />
         )}
         {view === 'pricing' && <PricingView />}

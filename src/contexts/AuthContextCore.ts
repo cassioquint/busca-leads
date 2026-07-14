@@ -1,7 +1,7 @@
 import { createContext } from 'react';
 import type { ExtendedUser } from '@/types';
 
-export type LimitModalType = 'SEARCHES_LIMIT' | 'FUNNEL_LIMIT' | null;
+export type LimitModalType = string | null;
 
 export interface AuthContextType {
   user: ExtendedUser | null;

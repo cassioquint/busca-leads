@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { api } from '@/services/api';
-import { useAuth } from '@/hooks/useAuth';
 import type { Lead } from '@/types';
 import { formatSearchLabel } from '@/utils/stringUtils';
 
@@ -38,8 +37,6 @@ export const useRadar = (
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { setLimitModalType } = useAuth();
-
   // 2. Efeitos para gravar no LocalStorage automaticamente quando os estados internos mudarem
   useEffect(() => localStorage.setItem('locus_active_tab', activeSubTab), [activeSubTab]);
   useEffect(() => localStorage.setItem('locus_hide_saved', JSON.stringify(hideSavedLeads)), [hideSavedLeads]);
@@ -57,8 +54,8 @@ export const useRadar = (
 
     try {
       const data = await api.searchLeads(query, cleanCity, undefined, 0);
-      
-      setLeads(data.results);  
+
+      setLeads(data.results);
       setPagination({
         hasMore: data.pagination.hasMore,
         nextStart: data.pagination.nextStart
@@ -73,13 +70,8 @@ export const useRadar = (
 
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Falha desconhecida';
-      
-      if (errorMessage === 'SEARCHES_LIMIT' || (err as { status?: number }).status === 429) {
-        setLimitModalType('SEARCHES_LIMIT');
-      } else {
-        console.error("Erro na busca:", err);
-        setError(errorMessage);
-      }
+      console.error("Erro na busca:", err);
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -115,9 +107,9 @@ export const useRadar = (
   const handleSave = (id: string) => {
     setLeads(currentLeads => {
       const updatedLeads = currentLeads.map(lead => (lead.id === id ? { ...lead, isSaved: true } : lead));
-      
+
       localStorage.setItem('locus_last_search_results', JSON.stringify(updatedLeads));
-      
+
       return updatedLeads;
     });
     onSaveLead(id);

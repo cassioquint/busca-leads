@@ -69,7 +69,6 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
       ]);
     } catch (error) {
       console.error(error);
-      alert('Erro ao gerar abordagem com IA.');
     } finally {
       setIsGeneratingAI(false);
     }
@@ -90,12 +89,11 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
       setAiMessage(newReply);
 
       setInteractions(prev => [
-        ...prev, 
+        ...prev,
         { id: Date.now().toString(), leadId: initialLead.id, role: 'ai', content: newReply }
       ]);
     } catch (error) {
       console.error(error);
-      alert('Erro ao gerar tréplica com IA.');
     } finally {
       setIsGeneratingReply(false);
     }

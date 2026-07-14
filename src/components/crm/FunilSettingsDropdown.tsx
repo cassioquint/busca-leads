@@ -1,9 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Settings, Tag, Download, Plus, FileSpreadsheet, Upload, Sparkles, Bot } from 'lucide-react';
+import { Settings, Tag, Download, Plus, FileSpreadsheet, Upload, Bot } from 'lucide-react';
 import type { Lead, Tag as TagType } from '@/types';
 import { exportLeadsToExcel } from '@/utils/excelUtils';
 import { downloadTemplateExcel, processExcelImport } from '@/utils/excelImportUtils';
-import { useAuth } from '@/hooks/useAuth';
 
 interface Bucket {
   id: string;
@@ -18,7 +17,7 @@ interface FunilSettingsDropdownProps {
   onManageTagsClick: () => void;
   onNewColumnClick: () => void;
   onImportLeadsInBulk: (leads: Partial<Lead>[]) => Promise<void>;
-  onManageAIConfigClick: () => void; 
+  onManageAIConfigClick: () => void;
 }
 
 export const FunilSettingsDropdown: React.FC<FunilSettingsDropdownProps> = ({
@@ -35,12 +34,6 @@ export const FunilSettingsDropdown: React.FC<FunilSettingsDropdownProps> = ({
   const settingsRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Acessa os dados do plano direto no dropdown
-  const { user, setLimitModalType } = useAuth();
-  
-  const canImport = user?.plan?.bulkImportAllowed ?? false;
-  const canExport = user?.plan?.exportAllowed ?? false;
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
@@ -55,17 +48,11 @@ export const FunilSettingsDropdown: React.FC<FunilSettingsDropdownProps> = ({
     const file = e.target.files?.[0];
     if (!file || buckets.length === 0) return;
 
-    if (!canImport) {
-      setLimitModalType('FUNNEL_LIMIT');
-      if (fileInputRef.current) fileInputRef.current.value = '';
-      return;
-    }
-
     try {
       const firstBucketId = buckets[0].id;
       const parsedLeads = await processExcelImport(file, firstBucketId);
       await onImportLeadsInBulk(parsedLeads);
-    } catch (error) { 
+    } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Falha ao processar arquivo de importação.';
       alert(errorMessage);
     } finally {
@@ -76,13 +63,12 @@ export const FunilSettingsDropdown: React.FC<FunilSettingsDropdownProps> = ({
   return (
     <div className="relative" ref={settingsRef}>
       {/* Input invisível movido para cá */}
-      <input 
-        type="file" 
-        ref={fileInputRef} 
-        onChange={handleFileChange} 
-        accept=".xlsx, .xls" 
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept=".xlsx, .xls"
         className="hidden"
-        disabled={!canImport}
       />
 
       <button
@@ -99,8 +85,7 @@ export const FunilSettingsDropdown: React.FC<FunilSettingsDropdownProps> = ({
 
       {showSettingsMenu && (
         <div className="absolute right-0 mt-2 w-60 bg-white border border-slate-200/80 rounded-xl shadow-2xl p-1.5 z-[50] text-left space-y-0.5 animate-in fade-in zoom-in-95 duration-100">
-          
-          {/* 🌟 NOVO BOTÃO: GERENCIAR IA */}
+
           <button
             type="button"
             onClick={() => { onManageAIConfigClick(); setShowSettingsMenu(false); }}
@@ -126,10 +111,6 @@ export const FunilSettingsDropdown: React.FC<FunilSettingsDropdownProps> = ({
             type="button"
             onClick={() => {
               setShowSettingsMenu(false);
-              if (!canExport) {
-                setLimitModalType('FUNNEL_LIMIT');
-                return;
-              }
               exportLeadsToExcel(savedLeads, buckets, tags);
             }}
             disabled={savedLeads.length === 0}
@@ -139,7 +120,6 @@ export const FunilSettingsDropdown: React.FC<FunilSettingsDropdownProps> = ({
               <Download className="w-3.5 h-3.5 text-slate-400" />
               <span>Exportar para Excel</span>
             </div>
-            {!canExport && <Sparkles className="w-3.5 h-3.5 text-indigo-500 fill-indigo-100 animate-pulse" />}
           </button>
 
           <div className="border-t border-slate-100 my-1" />
@@ -149,10 +129,6 @@ export const FunilSettingsDropdown: React.FC<FunilSettingsDropdownProps> = ({
             type="button"
             onClick={() => {
               setShowSettingsMenu(false);
-              if (!canImport) {
-                setLimitModalType('FUNNEL_LIMIT');
-                return;
-              }
               downloadTemplateExcel();
             }}
             className="w-full text-left text-xs text-slate-600 hover:bg-slate-50 hover:text-indigo-600 font-semibold px-2.5 py-2 rounded-lg transition-all flex items-center justify-between cursor-pointer"
@@ -161,7 +137,6 @@ export const FunilSettingsDropdown: React.FC<FunilSettingsDropdownProps> = ({
               <FileSpreadsheet className="w-3.5 h-3.5 text-slate-400" />
               <span>Baixar Modelo Excel</span>
             </div>
-            {!canImport && <Sparkles className="w-3.5 h-3.5 text-indigo-500 fill-indigo-100 animate-pulse" />}
           </button>
 
           {/* IMPORTAR PLANILHA */}
@@ -169,10 +144,6 @@ export const FunilSettingsDropdown: React.FC<FunilSettingsDropdownProps> = ({
             type="button"
             onClick={() => {
               setShowSettingsMenu(false);
-              if (!canImport) {
-                setLimitModalType('FUNNEL_LIMIT');
-                return;
-              }
               fileInputRef.current?.click();
             }}
             className="w-full text-left text-xs text-slate-600 hover:bg-slate-50 hover:text-indigo-600 font-semibold px-2.5 py-2 rounded-lg transition-all flex items-center justify-between cursor-pointer"
@@ -181,7 +152,6 @@ export const FunilSettingsDropdown: React.FC<FunilSettingsDropdownProps> = ({
               <Upload className="w-3.5 h-3.5 text-slate-400" />
               <span>Importar Planilha</span>
             </div>
-            {!canImport && <Sparkles className="w-3.5 h-3.5 text-indigo-500 fill-indigo-100 animate-pulse" />}
           </button>
 
           <div className="border-t border-slate-100 my-1" />

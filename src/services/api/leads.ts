@@ -8,7 +8,7 @@ import type { Lead, AiConfigData } from '@/types';
 async function handleApiError(response: Response, defaultMessage: string): Promise<never> {
 
   let errorData: Record<string, unknown> = {};
-  
+
   // 1. Tenta extrair o JSON de erro do backend com segurança
   try {
     const jsonData = await response.json();
@@ -21,9 +21,12 @@ async function handleApiError(response: Response, defaultMessage: string): Promi
 
   // 2. Valida se é um estouro de cota (429) com nosso código enum cadastrado
   if (response.status === 429 && typeof errorData.code === 'string') {
+
+    window.dispatchEvent(new CustomEvent('showLimitModal', { detail: errorData.code }));
+
     // Criamos um erro sintomático passando a causa original contextualmente
-    throw new Error(errorData.code, { 
-      cause: new Error(`HTTP 429: ${(errorData.error as string) || defaultMessage}`) 
+    throw new Error(errorData.code, {
+      cause: new Error(`HTTP 429: ${(errorData.error as string) || defaultMessage}`)
     });
   }
 
@@ -33,10 +36,10 @@ async function handleApiError(response: Response, defaultMessage: string): Promi
     throw new Error(customMessage);
   } catch (err: unknown) {
     // Regra do ESLint: Se já for um dos nossos Enums mapeados acima, propaga direto
-    if (err instanceof Error && (err.message === 'FUNNEL_LIMIT' || err.message === 'SEARCHES_LIMIT')) {
+    if (err instanceof Error && (err.message === 'FUNNEL_LIMIT' || err.message === 'SEARCHES_LIMIT' || err.message === 'AI_USAGE_LIMIT')) {
       throw err;
     }
-    
+
     // Solução Definitiva: Anexa o 'err' pego no catch dentro da propriedade 'cause'
     throw new Error(defaultMessage, { cause: err });
   }
@@ -60,7 +63,7 @@ export const leadApi = {
       headers,
       body: JSON.stringify({ prospectId, user })
     });
-    
+
     if (!response.ok) {
       await handleApiError(response, 'Falha ao salvar o lead no banco de dados');
     }
@@ -126,22 +129,22 @@ export const leadApi = {
   // Editar as observações/notas do Lead
   async updateLeadNotes(id: string, payload: { notes?: string; phone?: string; aiPitch?: string }, user: string) {
     const headers = await getAuthHeaders();
-    
+
     const response = await fetch(`${BASE_URL}/funil/${id}`, {
       method: 'PUT',
       headers,
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         notes: payload.notes,
         phone: payload.phone,
         aiPitch: payload.aiPitch,
-        user 
+        user
       })
     });
 
     if (!response.ok) {
       throw new Error('Falha ao atualizar as informações do lead');
     }
-    
+
     return response.json();
   },
 
@@ -160,7 +163,7 @@ export const leadApi = {
   // Gerar abordagem de vendas com IA (Groq)
   async generateAIPitch(id: string, user: string) {
     const headers = await getAuthHeaders();
-    
+
     const response = await fetch(`${BASE_URL}/leads/${id}/pitch`, {
       method: 'POST',
       headers,
@@ -170,14 +173,37 @@ export const leadApi = {
     if (!response.ok) {
       await handleApiError(response, 'Falha ao gerar abordagem com a IA');
     }
-    
+
     const data = await response.json();
     return data.pitch;
   },
 
+  // Gerar tréplica com IA
+  async generateLeadReply(id: string, lastMessageSent: string, clientResponse: string, user: string) {
+    const headers = await getAuthHeaders();
+    console.log(clientResponse)
+
+    const response = await fetch(`${BASE_URL}/leads/${id}/reply`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        lastMessageSent,
+        clientResponse,
+        user
+      })
+    });
+
+    if (!response.ok) {
+      await handleApiError(response, 'Falha ao gerar tréplica com a IA');
+    }
+
+    const data = await response.json();
+    return data.reply;
+  },
+
   getLeadInteractions: async (id: string) => {
     const headers = await getAuthHeaders();
-    
+
     const response = await fetch(`${BASE_URL}/leads/${id}/interactions`, {
       method: 'GET',
       headers
@@ -190,27 +216,27 @@ export const leadApi = {
   // Salvar configurações da IA
   async saveAiConfig(user: string, configData: AiConfigData) {
     const headers = await getAuthHeaders();
-    
+
     const response = await fetch(`${BASE_URL}/ai-config`, {
       method: 'PUT',
       headers,
-      body: JSON.stringify({ 
-        userEmail: user, 
-        ...configData 
+      body: JSON.stringify({
+        userEmail: user,
+        ...configData
       })
     });
 
     if (!response.ok) {
       await handleApiError(response, 'Falha ao salvar as configurações da IA no servidor');
     }
-    
+
     return response.json();
   },
 
   // Buscar configurações da IA do usuário
   async getAiConfig(user: string) {
     const headers = await getAuthHeaders();
-    
+
     const response = await fetch(`${BASE_URL}/ai-config?user=${encodeURIComponent(user)}`, {
       headers
     });
@@ -220,31 +246,8 @@ export const leadApi = {
       if (response.status === 404) return null;
       await handleApiError(response, 'Falha ao carregar as configurações da IA');
     }
-    
+
     return response.json();
-  },
-
-  // Gerar tréplica com IA
-  async generateLeadReply(id: string, lastMessageSent: string, clientResponse: string, user: string) {
-    const headers = await getAuthHeaders();
-    console.log(clientResponse)
-    
-    const response = await fetch(`${BASE_URL}/leads/${id}/reply`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ 
-        lastMessageSent, 
-        clientResponse, 
-        user 
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error('Falha ao conectar com o gerador de tréplica.');
-    }
-
-    const data = await response.json();
-    return data.reply;
   },
 
   // Envia o áudio como FormData
