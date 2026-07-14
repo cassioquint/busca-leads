@@ -1,5 +1,5 @@
 import { BASE_URL, getAuthHeaders } from './client';
-import type { Lead, AiConfigData } from '@/types';
+import type { Lead } from '@/types';
 
 /**
  * Função utilitária privada para tratar respostas de erro da API.
@@ -185,43 +185,6 @@ export const leadApi = {
 
     if (!response.ok) throw new Error('Falha ao buscar o histórico.');
     return await response.json();
-  },
-
-  // Salvar configurações da IA
-  async saveAiConfig(user: string, configData: AiConfigData) {
-    const headers = await getAuthHeaders();
-    
-    const response = await fetch(`${BASE_URL}/ai-config`, {
-      method: 'PUT',
-      headers,
-      body: JSON.stringify({ 
-        userEmail: user, 
-        ...configData 
-      })
-    });
-
-    if (!response.ok) {
-      await handleApiError(response, 'Falha ao salvar as configurações da IA no servidor');
-    }
-    
-    return response.json();
-  },
-
-  // Buscar configurações da IA do usuário
-  async getAiConfig(user: string) {
-    const headers = await getAuthHeaders();
-    
-    const response = await fetch(`${BASE_URL}/ai-config?user=${encodeURIComponent(user)}`, {
-      headers
-    });
-
-    if (!response.ok) {
-      // Se não encontrar (404), podemos retornar null para o frontend saber que está vazio
-      if (response.status === 404) return null;
-      await handleApiError(response, 'Falha ao carregar as configurações da IA');
-    }
-    
-    return response.json();
   },
 
   // Gerar tréplica com IA

@@ -4,6 +4,7 @@ import { leadApi } from './leads';
 import { bucketApi } from './buckets';
 import { tagApi } from './tags';
 import { userApi } from './users';
+import { aiApi } from './AI';
 
 export const api = {
   getStatus: systemApi.getStatus,
@@ -20,10 +21,13 @@ export const api = {
   deleteLead: leadApi.deleteLead,
   generateAIPitch: leadApi.generateAIPitch,
   getLeadInteractions: leadApi.getLeadInteractions,
-  saveAiConfig: leadApi.saveAiConfig,
-  getAiConfig: leadApi.getAiConfig,
   generateLeadReply: leadApi.generateLeadReply,
   transcribeAudio: leadApi.transcribeAudio,
+
+  saveAiConfig: aiApi.saveAiConfig,
+  getAiConfig: aiApi.getAiConfig,
+  trainPersona: aiApi.trainPersona,
+  simulateLeadReply: aiApi.simulateLeadReply,
 
   getBuckets: bucketApi.getBuckets,
   createBucket: bucketApi.createBucket,

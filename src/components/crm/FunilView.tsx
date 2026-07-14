@@ -6,7 +6,7 @@ import confetti from 'canvas-confetti';
 import { AddLeadModal, AddColumnModal, FunilColumn, FunilHeader } from './';
 import { ConfirmDeleteModal } from '@/components/common/ConfirmDeleteModal';
 import { ManageTagsModal } from './ManageTagsModal';
-import { AIConfigModal } from './AIConfigModal';
+import { AIConfigModal } from '../IA/AIConfigModal';
 
 interface Bucket {
   id: string;
@@ -272,6 +272,7 @@ export const FunilView: React.FC<FunilViewProps> = ({
       {/* MODAL DO CÉREBRO DA IA */}
       <AIConfigModal
         key={`ai-modal-${isAIModalOpen ? 'open' : 'closed'}`}
+        userEmail={userEmail}
         isOpen={isAIModalOpen}
         onClose={() => setIsAIModalOpen(false)}
         initialConfig={aiConfig}
