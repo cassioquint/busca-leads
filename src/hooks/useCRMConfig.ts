@@ -1,5 +1,6 @@
 import { api } from '@/services/api';
 import type { Bucket, Tag } from '@/types';
+import { useToast } from '@/contexts/ToastContext';
 
 interface UseCRMConfigProps {
   userEmail: string | null | undefined;
@@ -10,6 +11,8 @@ interface UseCRMConfigProps {
 
 export const useCRMConfig = ({ userEmail, buckets, setBuckets, setTags }: UseCRMConfigProps) => {
   
+  const { showToast } = useToast();
+
   const handleCreateColumn = async (name: string) => {
     if (!userEmail || !name.trim()) return;
 
@@ -19,7 +22,7 @@ export const useCRMConfig = ({ userEmail, buckets, setBuckets, setTags }: UseCRM
       setBuckets(prev => [...prev, newBucket]);
     } catch (error) {
       console.error(error);
-      alert("Não foi possível criar a coluna.");
+      showToast("Não foi possível criar a coluna.", "error");
     }
   };
 
@@ -87,8 +90,7 @@ export const useCRMConfig = ({ userEmail, buckets, setBuckets, setTags }: UseCRM
       ]);
     } catch (error) {
       console.error("Erro ao salvar nova ordem das colunas:", error);
-      alert("Não foi possível persistir a nova ordem no servidor.");
-      // Se der erro, você pode opcionalmente reverter o estado passando o array 'buckets' antigo
+      showToast("Não foi possível persistir a nova ordem no servidor.", "error");
     }
   };
 
@@ -99,7 +101,7 @@ export const useCRMConfig = ({ userEmail, buckets, setBuckets, setTags }: UseCRM
       setTags(prev => [...prev, newTag]);
     } catch (error) {
       console.error("Erro ao criar tag:", error);
-      alert("Não foi possível criar o rótulo.");
+      showToast("Não foi possível criar o rótulo.", "error");
     }
   };
 
@@ -109,7 +111,7 @@ export const useCRMConfig = ({ userEmail, buckets, setBuckets, setTags }: UseCRM
       setTags(prev => prev.map(t => t.id === id ? { ...t, name, color } : t));
     } catch (error) {
       console.error("Erro ao atualizar tag:", error);
-      alert("Não foi possível atualizar o rótulo.");
+      showToast("Não foi possível atualizar o rótulo.", "error");
     }
   };
 
@@ -120,7 +122,7 @@ export const useCRMConfig = ({ userEmail, buckets, setBuckets, setTags }: UseCRM
       setTags(prev => prev.filter(t => t.id !== id));
     } catch (error) {
       console.error("Erro ao deletar tag:", error);
-      alert("Não foi possível excluir o rótulo.");
+      showToast("Não foi possível excluir o rótulo.", "error");
     }
   };
 

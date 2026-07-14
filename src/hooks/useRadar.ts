@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { api } from '@/services/api';
 import type { Lead } from '@/types';
 import { formatSearchLabel } from '@/utils/stringUtils';
+import { useToast } from '@/contexts/ToastContext';
 
 export const useRadar = (
   leads: Lead[],
@@ -9,6 +10,8 @@ export const useRadar = (
   setHasSearched: (value: boolean) => void,
   onSaveLead: (id: string) => void
 ) => {
+  const { showToast } = useToast();
+
   // 1. Inicialização puxando os dados do cache do navegador (LocalStorage)
   const [activeSubTab, setActiveSubTab] = useState<'maps' | 'inauguracoes'>(() => {
     return (localStorage.getItem('locus_active_tab') as 'maps' | 'inauguracoes') || 'maps';
@@ -98,7 +101,7 @@ export const useRadar = (
       });
     } catch (err: unknown) {
       console.error("Erro ao carregar mais leads:", err);
-      alert("Não foi possível carregar mais registros. Tente novamente.");
+      showToast("Não foi possível carregar mais registros. Tente novamente.", "error");
     } finally {
       setIsLoadingMore(false);
     }

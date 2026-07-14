@@ -3,6 +3,7 @@ import { Settings, Tag, Download, Plus, FileSpreadsheet, Upload, Bot } from 'luc
 import type { Lead, Tag as TagType } from '@/types';
 import { exportLeadsToExcel } from '@/utils/excelUtils';
 import { downloadTemplateExcel, processExcelImport } from '@/utils/excelImportUtils';
+import { useToast } from '@/contexts/ToastContext';
 
 interface Bucket {
   id: string;
@@ -33,6 +34,7 @@ export const FunilSettingsDropdown: React.FC<FunilSettingsDropdownProps> = ({
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -54,7 +56,7 @@ export const FunilSettingsDropdown: React.FC<FunilSettingsDropdownProps> = ({
       await onImportLeadsInBulk(parsedLeads);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Falha ao processar arquivo de importação.';
-      alert(errorMessage);
+      showToast(errorMessage, 'error');
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = '';
     }

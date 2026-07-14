@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Sparkles, Copy, Settings, MessageCircle, Send, Paperclip } from 'lucide-react';
 import type { LeadInteraction } from '@/types';
 import { ClientBubble } from './ClientBubble';
+import { useToast } from '@/contexts/ToastContext';
 
 interface CopilotChatProps {
   aiMessage: string;
@@ -31,8 +32,8 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({
   const [clientInput, setClientInput] = useState('');
   const [isTranscribing, setIsTranscribing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -40,7 +41,7 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(aiMessage);
-    alert('Mensagem copiada para a área de transferência!');
+    showToast('Mensagem copiada para a área de transferência!', 'success');
   };
 
   const handleReplySubmit = () => {
@@ -67,7 +68,7 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({
       }
     } catch (error) {
       console.error(error);
-      alert('Erro ao transcrever o áudio.');
+      showToast('Erro ao transcrever o áudio.', 'error');
     } finally {
       setIsTranscribing(false);
       if (fileInputRef.current) fileInputRef.current.value = '';

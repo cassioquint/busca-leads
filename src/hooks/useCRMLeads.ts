@@ -1,6 +1,7 @@
 import { useRef, useEffect } from 'react';
 import { api } from '@/services/api';
 import type { Lead, Bucket, Tag } from '@/types';
+import { useToast } from '@/contexts/ToastContext';
 
 interface UseCRMLeadsProps {
   userEmail: string | null | undefined;
@@ -20,6 +21,7 @@ export const useCRMLeads = ({
   tags
 }: UseCRMLeadsProps) => {
   const bucketsRef = useRef<Bucket[]>(buckets);
+  const { showToast } = useToast();
 
   useEffect(() => {
     bucketsRef.current = buckets;
@@ -68,7 +70,7 @@ export const useCRMLeads = ({
 
       setFunilLeads(prev => prev.filter(l => l.id !== id && l.googlePlaceId !== id));
 
-      alert("Houve um erro operacional ao salvar o lead.");
+      showToast("Houve um erro operacional ao salvar o lead.", "error");
     }
   };
 
@@ -91,7 +93,7 @@ export const useCRMLeads = ({
     } catch (error) {
       console.error(error);
       setFunilLeads(prev => prev.map(l => l.id === id ? { ...l, bucketId: currentLead.bucketId } : l));
-      alert("Não foi possível salvar a movimentação.");
+      showToast("Não foi possível salvar a movimentação.", "error");
     }
   };
 
@@ -126,7 +128,7 @@ export const useCRMLeads = ({
       console.error(error);
       setFunilLeads(prev => prev.filter(l => l.id !== tempId));
 
-      alert("Erro ao salvar o lead manual.");
+      showToast("Erro ao salvar o lead manual.", "error");
     }
   };
 
@@ -142,7 +144,7 @@ export const useCRMLeads = ({
     } catch (error) {
       console.error(error);
       setFunilLeads(previousLeads);
-      alert("Não foi possível atualizar o rótulo.");
+      showToast("Não foi possível atualizar o rótulo.", "error");
     }
   };
 
@@ -157,7 +159,7 @@ export const useCRMLeads = ({
     } catch (error) {
       console.error(error);
       setFunilLeads(previousLeads);
-      alert("Falha ao salvar as alterações do lead.");
+      showToast("Falha ao salvar as alterações do lead.", "error");
     }
   };
 
@@ -193,7 +195,7 @@ export const useCRMLeads = ({
           localStorage.setItem('locus_last_search_results', JSON.stringify(revertedRadar));
         }
       }
-      alert("Erro ao excluir o lead.");
+      showToast("Erro ao excluir o lead.", "error");
     }
   };
 
@@ -203,11 +205,11 @@ export const useCRMLeads = ({
     try {
       const savedLeadsFromServer = await api.importLeadsBulk(newLeads, userEmail);
       setFunilLeads(prev => [...prev, ...savedLeadsFromServer]);
-      alert(`${savedLeadsFromServer.length} leads importados com sucesso!`);
+      showToast(`${savedLeadsFromServer.length} leads importados com sucesso!`, "success");
     } catch (error: unknown) {
       console.error(error);
 
-      alert('Erro ao salvar os leads importados no servidor.');
+      showToast("Erro ao salvar os leads importados no servidor.", "error");
     }
   };
 

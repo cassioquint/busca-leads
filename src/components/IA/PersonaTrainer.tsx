@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bot, User, Send, BrainCircuit, CheckCircle, X } from 'lucide-react';
+import { useToast } from '@/contexts/ToastContext';
 
 interface Message {
   id: string;
@@ -31,7 +32,7 @@ export const PersonaTrainer: React.FC<PersonaTrainerProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [isTrainingComplete, setIsTrainingComplete] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
+  const { showToast } = useToast();
   const vendorRepliesCount = messages.filter(m => m.role === 'vendor').length;
   const targetReplies = 3; 
 
@@ -91,7 +92,7 @@ export const PersonaTrainer: React.FC<PersonaTrainerProps> = ({
       setIsTrainingComplete(true);
     } catch (error) {
       console.error(error);
-      alert('Erro ao processar o perfil da IA.');
+      showToast('Erro ao processar o perfil da IA.', 'error');
     } finally {
       setIsProcessing(false);
     }

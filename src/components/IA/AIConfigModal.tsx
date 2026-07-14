@@ -3,6 +3,7 @@ import { X, Bot, BrainCircuit, Settings2 } from 'lucide-react';
 import type { AiConfigData } from '@/types';
 import { PersonaTrainer } from './PersonaTrainer';
 import { AIConfigModalForm } from '../layout/AIConfigModalForm';
+import { useToast } from '@/contexts/ToastContext';
 import { api } from '@/services/api';
 
 interface AIConfigModalProps {
@@ -31,6 +32,7 @@ export const AIConfigModal: React.FC<AIConfigModalProps> = ({
   });
 
   const [isSaving, setIsSaving] = useState(false);
+  const { showToast } = useToast();
 
   if (!isOpen) return null;
 
@@ -42,7 +44,7 @@ export const AIConfigModal: React.FC<AIConfigModalProps> = ({
       onClose();
     } catch (error) {
       console.error('Erro ao salvar config da IA:', error);
-      alert('Falha ao salvar as configurações da IA.');
+      showToast('Falha ao salvar as configurações da IA.', 'error');
     } finally {
       setIsSaving(false);
     }
@@ -128,7 +130,7 @@ export const AIConfigModal: React.FC<AIConfigModalProps> = ({
               }}
               onSavePersona={async (msgs) => {
                 await api.trainPersona(userEmail, msgs);
-                alert('Cérebro treinado e salvo com sucesso!');
+                showToast('Cérebro treinado e salvo com sucesso!', 'success');
               }}
             />
           </div>

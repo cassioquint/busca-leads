@@ -7,6 +7,7 @@ import { AddLeadModal, AddColumnModal, FunilColumn, FunilHeader } from './';
 import { ConfirmDeleteModal } from '@/components/common/ConfirmDeleteModal';
 import { ManageTagsModal } from './ManageTagsModal';
 import { AIConfigModal } from '../IA/AIConfigModal';
+import { useToast } from '@/contexts/ToastContext';
 
 interface Bucket {
   id: string;
@@ -80,6 +81,7 @@ export const FunilView: React.FC<FunilViewProps> = ({
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [aiConfig, setAiConfig] = useState<AiConfigData | null>(null);
   const savedLeads = leads.filter(l => l.isSaved);
+  const { showToast } = useToast();
 
   // Hook para soltar confetes
   useEffect(() => {
@@ -139,7 +141,7 @@ export const FunilView: React.FC<FunilViewProps> = ({
 
     const columnLeads = savedLeads.filter(l => l.bucketId === activeColumn.id);
     if (columnLeads.length > 0) {
-      alert("Ação Interrompida: Esta coluna possui leads vinculados. Transfira os leads antes de remover.");
+      showToast('Ação Interrompida: Esta coluna possui leads vinculados. Transfira os leads antes de remover.', 'error');
       setShowDeleteColumnModal(false);
       return;
     }

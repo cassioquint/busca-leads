@@ -6,6 +6,7 @@ import { BillingDataForm } from './profile/BillingDataForm';
 import { SecurityForm } from './profile/SecurityForm';
 import { userApi } from '@/services/api/users';
 import { CancelPlanModal } from '@/components/plans/CancelPlanModal';
+import { useToast } from '@/contexts/ToastContext';
 import type { User as FirebaseUser } from 'firebase/auth';
 
 interface ProfileViewProps {
@@ -27,6 +28,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigateBack, onNavi
   const limiteBuscas = plano?.maxSearchesPerMonth ?? 15;
   const percentualUso = Math.min(Math.round((buscasRealizadas / limiteBuscas) * 100), 100);
   const firebaseUserInstance = user as unknown as FirebaseUser;
+  const { showToast } = useToast();
 
   const isFreeUser = !plano || plano.id === 'free';
 
@@ -71,8 +73,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigateBack, onNavi
       console.error('Erro ao cancelar assinatura:', error);
       const msg = error instanceof Error ? error.message : 'Falha interna ao processar cancelamento.';
       
-      // Aqui mantemos um feedback ou setamos em um estado de erro caso o backend recuse
-      alert(`Não foi possível cancelar: ${msg}`);
+      showToast(`Não foi possível cancelar: ${msg}`, "error");
     } finally {
       setLoadingCancel(false);
     }
