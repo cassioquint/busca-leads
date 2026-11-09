@@ -20,6 +20,7 @@ interface PricingCardProps {
   isPopular?: boolean;
   isCurrent?: boolean;
   isLoading?: boolean;
+  isUnavailable?: boolean;
   onSelect: () => void;
 }
 
@@ -36,6 +37,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
   isPopular = false,
   isCurrent = false,
   isLoading = false,
+  isUnavailable = false,
   onSelect,
 }) => {
   return (
@@ -97,10 +99,10 @@ export const PricingCard: React.FC<PricingCardProps> = ({
       <div className="pt-8">
         <button
           type="button"
-          disabled={isCurrent || isLoading}
+          disabled={isCurrent || isLoading || isUnavailable}
           onClick={onSelect}
           className={`w-full font-bold text-sm py-3 rounded-xl transition-all flex justify-center items-center h-11 shadow-sm focus:outline-none ${
-            isCurrent
+            isCurrent || isUnavailable
               ? 'bg-slate-100 text-slate-500 cursor-not-allowed'
               : isPopular
               ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200 active:scale-[0.99] cursor-pointer'
@@ -111,6 +113,8 @@ export const PricingCard: React.FC<PricingCardProps> = ({
             <Loader2 className={`w-4 h-4 animate-spin ${isPopular ? 'text-white' : 'text-indigo-600'}`} />
           ) : isCurrent ? (
             'Plano Atual'
+          ) : isUnavailable ? (
+            'Em breve'
           ) : (
             buttonText
           )}

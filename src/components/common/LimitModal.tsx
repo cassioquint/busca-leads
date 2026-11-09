@@ -3,6 +3,7 @@ import { X, Sparkles, AlertCircle, KanbanSquare, Search, Loader2, Zap } from 'lu
 import { useAuth } from '@/hooks/useAuth';
 import { userApi } from '@/services/api/users';
 import { type ModalContentConfig } from '@/types';
+import { CHECKOUT_ENABLED } from '@/config/billing';
 
 interface LimitModalProps {
   onGoToPricing: () => void;
@@ -68,10 +69,12 @@ export const LimitModal: React.FC<LimitModalProps> = ({ onGoToPricing }) => {
     ? (user?.plan?.maxSearchesPerMonth ?? 15)
     : (user?.plan?.maxLeadsInFunnel ?? 20);
 
+  const canUseQuickCheckout = CHECKOUT_ENABLED && Boolean(user?.asaasCustomerId);
+
   const handleUpgradeAction = async () => {
     // 3. CHECKOUT RÁPIDO GENÉRICO
     // Qualquer trava permite o checkout rápido se o usuário já tiver o ID do Asaas
-    if (user?.asaasCustomerId) {
+    if (canUseQuickCheckout) {
       setIsConnectingGateway(true);
       try {
         const token = await getFirebaseToken();
@@ -164,12 +167,12 @@ export const LimitModal: React.FC<LimitModalProps> = ({ onGoToPricing }) => {
             {isConnectingGateway ? (
               <>
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                <span>Conectando ao Asaas...</span>
+                <span>Conectando ao pagamento...</span>
               </>
             ) : (
               <>
                 <Sparkles className="w-3.5 h-3.5 fill-white" />
-                <span>{user?.asaasCustomerId ? 'Ativar Plano Pro Agora' : 'Ver Planos e Preços'}</span>
+                <span>{canUseQuickCheckout ? 'Ativar Plano Pro Agora' : 'Ver Planos e Preços'}</span>
               </>
             )}
           </button>
