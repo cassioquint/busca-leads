@@ -181,7 +181,6 @@ export const leadApi = {
   // Gerar tréplica com IA
   async generateLeadReply(id: string, chatHistory: LeadInteraction[], clientResponse: string, user: string) {
     const headers = await getAuthHeaders();
-    console.log(clientResponse)
 
     const response = await fetch(`${BASE_URL}/leads/${id}/reply`, {
       method: 'POST',
