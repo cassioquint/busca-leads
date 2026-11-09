@@ -30,7 +30,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ onNavigateBack, onNavi
   const firebaseUserInstance = user as unknown as FirebaseUser;
   const { showToast } = useToast();
 
-  const isFreeUser = !plano || plano.id === 'free';
+  const isFreeUser = !plano || plano.slug === 'free';
 
   // Abre o painel financeiro do cliente direto no Asaas
   const handleOpenBillingPortal = async () => {
