@@ -1,5 +1,5 @@
 import { BASE_URL, getAuthHeaders } from './client';
-import type { Lead } from '@/types';
+import type { Lead, LeadInteraction } from '@/types';
 
 /**
  * Função utilitária privada para tratar respostas de erro da API.
@@ -179,7 +179,7 @@ export const leadApi = {
   },
 
   // Gerar tréplica com IA
-  async generateLeadReply(id: string, lastMessageSent: string, clientResponse: string, user: string) {
+  async generateLeadReply(id: string, chatHistory: LeadInteraction[], clientResponse: string, user: string) {
     const headers = await getAuthHeaders();
     console.log(clientResponse)
 
@@ -187,7 +187,7 @@ export const leadApi = {
       method: 'POST',
       headers,
       body: JSON.stringify({
-        lastMessageSent,
+        chatHistory,
         clientResponse,
         user
       })

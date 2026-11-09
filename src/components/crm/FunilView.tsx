@@ -41,7 +41,7 @@ interface FunilViewProps {
   onImportLeadsInBulk: (leads: Partial<Lead>[]) => Promise<void>;
   onGenerateAIPitch?: (leadId: string) => Promise<string>;
   onFetchInteractions?: (leadId: string) => Promise<LeadInteraction[]>;
-  onGenerateAIReply?: (id: string, lastMessage: string, clientResponse: string) => Promise<string>;
+  onGenerateAIReply?: (id: string, chatHistory: LeadInteraction[], clientResponse: string) => Promise<string>;
   onTranscribeAudio?: (id: string, file: File) => Promise<string>;
   onSaveAiConfig: (data: AiConfigData) => Promise<void>;
 }
