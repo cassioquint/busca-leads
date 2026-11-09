@@ -21,7 +21,7 @@ export const CityAutocomplete: React.FC<CityAutocompleteProps> = ({ value, onCha
         const response = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/municipios');
         const data = await response.json();
 
-        const formatted = data.map((c: any) => {
+        const formatted = data.map((c: { nome: string; microrregiao?: { mesorregiao?: { UF?: { sigla?: string } } } }) => {
           const uf = c?.microrregiao?.mesorregiao?.UF?.sigla;
           return uf ? `${c.nome} - ${uf}` : c.nome;
         });
