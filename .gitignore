@@ -24,3 +24,6 @@ PsPadBK
 *.njsproj
 *.sln
 *.sw?
+
+# Anotações locais
+ajustes.md
