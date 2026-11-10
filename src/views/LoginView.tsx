@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Lock, User } from 'lucide-react';
+import { Mail, Lock, User, Search, Sparkles, MessageCircle, KanbanSquare, type LucideIcon } from 'lucide-react';
 import { 
   signInWithPopup, 
   signInWithEmailAndPassword, 
@@ -7,6 +7,48 @@ import {
   updateProfile 
 } from 'firebase/auth';
 import { auth, googleProvider } from '../services/firebase';
+
+const HEADLINE = 'Encontre empresas da sua região e comece a vender pelo WhatsApp.';
+const SUBHEADLINE = 'O Locus reúne busca de clientes, funil de vendas e inteligência artificial em um só lugar, do primeiro contato ao fechamento.';
+
+const BENEFITS: { icon: LucideIcon; title: string; description: string }[] = [
+  {
+    icon: Search,
+    title: 'Encontre quem pode comprar de você',
+    description: 'Busque por segmento e cidade e veja telefone, site e avaliações de cada empresa.',
+  },
+  {
+    icon: Sparkles,
+    title: 'Abordagens escritas por IA',
+    description: 'Mensagens pensadas para cada empresa, no seu tom de voz e prontas para enviar pelo WhatsApp.',
+  },
+  {
+    icon: MessageCircle,
+    title: 'Saiba o que responder',
+    description: 'Cole a resposta do cliente ou envie o áudio, e o Copiloto sugere como contornar a objeção.',
+  },
+  {
+    icon: KanbanSquare,
+    title: 'Todas as negociações à vista',
+    description: 'Organize seus leads em um funil visual, com colunas e etiquetas do seu jeito.',
+  },
+];
+
+const BenefitList: React.FC<{ inverted?: boolean }> = ({ inverted = false }) => (
+  <ul className="space-y-6">
+    {BENEFITS.map(({ icon: Icon, title, description }) => (
+      <li key={title} className="flex items-start gap-4">
+        <div className={`w-10 h-10 shrink-0 rounded-xl flex items-center justify-center ${inverted ? 'bg-white/10 text-sky-200' : 'bg-indigo-50 text-indigo-600'}`}>
+          <Icon className="w-5 h-5" />
+        </div>
+        <div>
+          <h3 className={`text-sm font-bold ${inverted ? 'text-white' : 'text-slate-800'}`}>{title}</h3>
+          <p className={`text-sm mt-1 leading-relaxed ${inverted ? 'text-sky-100/80' : 'text-slate-500'}`}>{description}</p>
+        </div>
+      </li>
+    ))}
+  </ul>
+);
 
 export const LoginView: React.FC = () => {
   const [name, setName] = useState('');
@@ -51,7 +93,6 @@ export const LoginView: React.FC = () => {
       if (isRegistering) {
         const result = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(result.user, { displayName: name });
-        console.log("Conta criada para:", name);
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
@@ -69,7 +110,22 @@ export const LoginView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex flex-col items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-[#f8fafc] lg:grid lg:grid-cols-2">
+      <aside className="hidden lg:flex flex-col justify-center bg-[#073c59] px-12 xl:px-20 py-12">
+        <div className="max-w-[520px] mx-auto">
+          <p className="text-xs font-bold uppercase tracking-widest text-sky-200">
+            Prospecção com IA para quem vende para empresas
+          </p>
+          <h2 className="text-4xl font-extrabold text-white tracking-tight leading-tight mt-4">{HEADLINE}</h2>
+          <p className="text-base text-sky-100/80 leading-relaxed mt-4 mb-10">{SUBHEADLINE}</p>
+          <BenefitList inverted />
+          <p className="text-sm font-semibold text-white mt-10 pt-6 border-t border-white/10">
+            Comece grátis, sem cartão de crédito.
+          </p>
+        </div>
+      </aside>
+
+      <main className="min-h-screen flex flex-col items-center justify-center p-4 py-10 relative overflow-hidden">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-50 rounded-full blur-[100px] opacity-70 pointer-events-none" />
 
       <div className="flex flex-col items-center gap-1 mb-8 relative z-10">
@@ -86,6 +142,11 @@ export const LoginView: React.FC = () => {
         <p className="text-xs text-slate-500 font-medium">Radar de prospecção · CRM</p>
       </div>
 
+      <div className="lg:hidden w-full max-w-[440px] text-center mb-8 relative z-10">
+        <h2 className="text-2xl font-extrabold text-[#073c59] tracking-tight leading-tight">{HEADLINE}</h2>
+        <p className="text-sm text-slate-500 leading-relaxed mt-3">{SUBHEADLINE}</p>
+      </div>
+
       <div className="w-full max-w-[440px] bg-white rounded-3xl border border-slate-200/80 p-8 shadow-xl shadow-slate-200/40 relative z-10">
         
         <div className="mb-6">
@@ -93,7 +154,7 @@ export const LoginView: React.FC = () => {
             {isRegistering ? 'Criar nova conta' : 'Entrar na sua conta'}
           </h2>
           <p className="text-sm text-slate-500">
-            {isRegistering ? 'Preencha os dados abaixo para começar.' : 'Bem-vindo de volta. Faça login para continuar.'}
+            {isRegistering ? 'Comece grátis, sem cartão de crédito.' :'Bem-vindo de volta. Faça login para continuar.'}
           </p>
         </div>
 
@@ -226,6 +287,11 @@ export const LoginView: React.FC = () => {
         Ao continuar, você concorda com nossos Termos e Política de Privacidade.
       </p>
 
+      <section className="lg:hidden w-full max-w-[440px] mt-10 relative z-10">
+        <BenefitList />
+      </section>
+
+      </main>
     </div>
   );
 };

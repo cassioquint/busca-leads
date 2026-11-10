@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { userApi, type CheckoutPayload, type PlanData } from '@/services/api/users';
 import { PricingCard } from '@/components/plans/PricingCard';
 import { BillingFormModal, type BillingModalData } from '@/components/plans/BillingFormModal';
+import { CHECKOUT_ENABLED, CHECKOUT_UNAVAILABLE_MESSAGE } from '@/config/billing';
 
 export const PricingView: React.FC = () => {
   const { user, getFirebaseToken } = useAuth();
@@ -158,6 +159,14 @@ export const PricingView: React.FC = () => {
           </span>
         </div>
 
+        {!CHECKOUT_ENABLED && (
+          <div className="text-center mt-4">
+            <p className="text-sm font-semibold text-amber-700 bg-amber-50 border border-amber-100 px-4 py-3 rounded-xl inline-block">
+              {CHECKOUT_UNAVAILABLE_MESSAGE}
+            </p>
+          </div>
+        )}
+
         {pageError && (
           <div className="text-center mt-4">
              <p className="text-sm font-semibold text-rose-500 bg-rose-50 border border-rose-100 px-4 py-3 rounded-xl inline-block">
@@ -200,6 +209,7 @@ export const PricingView: React.FC = () => {
             isPopular={true}
             isCurrent={user?.plan?.slug?.includes('starter')}
             isLoading={loadingPlan === `starter_${isAnnual ? 'anual' : 'mensal'}`}
+            isUnavailable={!CHECKOUT_ENABLED}
             icon={<Zap className="w-[18px] h-[18px] fill-indigo-100" />}
             features={[
               { text: '200 buscas no Radar por mês', included: true },
@@ -221,6 +231,7 @@ export const PricingView: React.FC = () => {
             buttonText="Escolher Pro"
             isCurrent={user?.plan?.slug?.includes('pro')}
             isLoading={loadingPlan === `pro_${isAnnual ? 'anual' : 'mensal'}`}
+            isUnavailable={!CHECKOUT_ENABLED}
             icon={<Crown className="w-[18px] h-[18px] fill-amber-50" />}
             features={[
               { text: '1000 buscas no Radar por mês', included: true },

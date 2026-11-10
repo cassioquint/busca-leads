@@ -75,8 +75,8 @@ export const WorkspaceView: React.FC<WorkspaceViewProps> = ({ userEmail }) => {
           crm.handleUpdateLeadPitch(id, pitch);
           return pitch;
         }}
-        onGenerateAIReply={async (id, lastMessage, clientResponse) => {
-          const reply = await api.generateLeadReply(id, lastMessage, clientResponse, userEmail);
+        onGenerateAIReply={async (id, chatHistory, clientResponse) => {
+          const reply = await api.generateLeadReply(id, chatHistory, clientResponse, userEmail);
           crm.handleUpdateLeadPitch(id, reply);
           return reply;
         }}

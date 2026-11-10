@@ -11,7 +11,7 @@ interface AddLeadModalProps {
   onGenerateAIPitch?: (leadId: string) => Promise<string>;
   onFetchInteractions?: (leadId: string) => Promise<LeadInteraction[]>;
   onOpenAIConfig?: () => void;
-  onGenerateAIReply?: (leadId: string, lastMessage: string, clientResponse: string) => Promise<string>;
+  onGenerateAIReply?: (leadId: string, chatHistory: LeadInteraction[], clientResponse: string) => Promise<string>;
   onTranscribeAudio?: (leadId: string, file: File) => Promise<string>;
 }
 
@@ -85,7 +85,7 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
     setIsGeneratingReply(true);
 
     try {
-      const newReply = await onGenerateAIReply(initialLead.id, aiMessage, clientResponse);
+      const newReply = await onGenerateAIReply(initialLead.id, interactions, clientResponse);
       setAiMessage(newReply);
 
       setInteractions(prev => [
